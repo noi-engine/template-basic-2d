@@ -1,0 +1,29 @@
+{
+  "excludes": [
+    ".git",
+    ".vscode",
+    ".gitignore",
+    "templi.json",
+    "sources/main.cpp"
+  ],
+  "placeholders": [
+    {
+      "label": "PROJECT_CATEGORY",
+      "name": "PROJECT_CATEGORY",
+      "type": "TEXT",
+      "validators": []
+    },
+    {
+      "label": "PROJECT_NAME",
+      "name": "PROJECT_NAME",
+      "type": "TEXT",
+      "validators": []
+    },
+    {
+      "label": "PROJECT_VERSION",
+      "name": "PROJECT_VERSION",
+      "type": "TEXT",
+      "validators": []
+    }
+  ]
+}
