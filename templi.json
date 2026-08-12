@@ -1,29 +1,44 @@
 {
-  "excludes": [
+  "copy_excludes": [
     ".git",
     ".vscode",
-    ".gitignore",
     "templi.json",
-    "sources/main.cpp"
+    "noi-engine.template.json"
+  ],
+  "parse_excludes": [
+    "sources/main.cpp",
+    ".gitignore"
   ],
   "placeholders": [
     {
       "label": "PROJECT_CATEGORY",
       "name": "PROJECT_CATEGORY",
       "type": "TEXT",
-      "validators": []
+      "validators": [
+        {
+          "pattern": "required"
+        }
+      ]
     },
     {
       "label": "PROJECT_NAME",
       "name": "PROJECT_NAME",
       "type": "TEXT",
-      "validators": []
+      "validators": [
+        {
+          "pattern": "required"
+        }
+      ]
     },
     {
       "label": "PROJECT_VERSION",
       "name": "PROJECT_VERSION",
       "type": "TEXT",
-      "validators": []
+      "validators": [
+        {
+          "pattern": "required"
+        }
+      ]
     }
   ]
 }
