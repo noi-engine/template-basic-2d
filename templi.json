@@ -3,7 +3,7 @@
     ".git",
     ".vscode",
     "templi.json",
-    "noi-engine.template.json"
+    "noi_ngine.template.json"
   ],
   "parse_excludes": [
     "sources/main.cpp",
