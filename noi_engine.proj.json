@@ -1,5 +1,10 @@
 {
   "name": "{{PROJECT_NAME}}",
   "version": "{{PROJECT_VERSION}}",
-  "category": "{{PROJECT_CATEGORY}}"
+  "category": "{{PROJECT_CATEGORY}}",
+  "start_scene": "resources/scenes/main.scene.json",
+  "window": {
+    "width": 900,
+    "height": 700
+  }
 }

@@ -1,12 +1,30 @@
 {
   "copy_excludes": [
     ".git",
+    ".noi_engine",
     ".vscode",
+    ".idea",
+    "build",
     "templi.json",
-    "noi_ngine.template.json"
+    "noi_engine.template.json"
   ],
   "parse_excludes": [
+    ".git",
+    ".noi_engine",
+    ".vscode",
+    ".idea",
+    "build",
+    "templi.json",
+    "noi_engine.template.json",
+    "resources/scenes/main.scene.json",
+    "CMakeLists.txt",
+    ".clang-tidy",
+    ".clang-format",
     "sources/main.cpp",
+    ".templates/game_config.hpp.in",
+    "CMakePresets.json",
+    "cmake/project_config.cmake",
+    "cmake/copy_directory.cmake",
     ".gitignore"
   ],
   "placeholders": [
@@ -14,31 +32,19 @@
       "label": "PROJECT_CATEGORY",
       "name": "PROJECT_CATEGORY",
       "type": "TEXT",
-      "validators": [
-        {
-          "pattern": "required"
-        }
-      ]
+      "validators": []
     },
     {
       "label": "PROJECT_NAME",
       "name": "PROJECT_NAME",
       "type": "TEXT",
-      "validators": [
-        {
-          "pattern": "required"
-        }
-      ]
+      "validators": []
     },
     {
       "label": "PROJECT_VERSION",
       "name": "PROJECT_VERSION",
       "type": "TEXT",
-      "validators": [
-        {
-          "pattern": "required"
-        }
-      ]
+      "validators": []
     }
   ]
 }
