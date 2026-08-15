@@ -32,7 +32,17 @@ set_target_properties(noi_engine_game PROPERTIES
     INSTALL_RPATH "$ORIGIN/libs"
 )
 
-add_copy_directory_dependency(noi_engine_game "resources" "${CMAKE_CURRENT_SOURCE_DIR}/resources" "${CMAKE_BINARY_DIR}/bin")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_copy_directory_dependency(noi_engine_game "resources" "${CMAKE_CURRENT_SOURCE_DIR}/resources" "${CMAKE_BINARY_DIR}/bin")
+else()
+    include(.resources_packer/ResourcesPacker.cmake)
+
+    compile_resources(
+        "${CMAKE_CURRENT_SOURCE_DIR}/resources"
+        "${CMAKE_BINARY_DIR}/bin/resources.pack"
+    )
+endif()
+
 add_copy_directory_dependency(noi_engine_game "libs" "${CMAKE_CURRENT_SOURCE_DIR}/.noi_engine/libs" "${CMAKE_BINARY_DIR}/bin")
 
 if(DEFINED GAME_GENERATED_DIR)
