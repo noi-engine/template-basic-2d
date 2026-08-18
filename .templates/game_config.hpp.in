@@ -12,20 +12,8 @@ namespace game_config
     inline constexpr std::string_view version = "@GAME_VERSION@";
     inline constexpr std::string_view category = "@GAME_CATEGORY@";
     inline constexpr std::string_view start_scene = "@GAME_START_SCENE@";
-    inline constexpr std::string_view asset_provider = "@GAME_ASSET_PROVIDER_CLASS@";
+    inline constexpr std::string_view resource_loader_name = "@GAME_ASSET_PROVIDER_CLASS@";
 
     inline constexpr int window_width = @GAME_WINDOW_WIDTH@;
     inline constexpr int window_height = @GAME_WINDOW_HEIGHT@;
-
-    template <typename T>
-    auto get_resource_loader(
-        const std::unordered_map<std::string, std::function<std::unique_ptr<T>()>>& resource_loaders)
-        -> std::unique_ptr<T>
-    {
-        auto it = resource_loaders.find(std::string(asset_provider));
-        if (it != resource_loaders.end()) {
-            return std::move(it->second());
-        }
-        return nullptr;
-    }
 }

@@ -1,32 +1,25 @@
 #include <filesystem>
 #include <functional>
 #include <memory>
-#include <string>
-#include <unordered_map>
 #include <noi_engine/core/sdl/sdl_game.hpp>
-#include <noi_engine/core/resources/resource_loader.hpp>
+#include <string>
 
+#include "config/config.hpp"
 #include "game_config.hpp"
+#include "scripts/scripts_register.hpp"
 
-using namespace noi_engine;
-
-static const std::unordered_map<
-	std::string, std::function<std::unique_ptr<resource_loader>()>>
-	RESOURCE_LOADERS{
-		{ "source", []() -> std::unique_ptr<resource_loader>
-		  { return std::make_unique<source_resource_loader>(); } },
-		{ "compiled", []() -> std::unique_ptr<resource_loader>
-		  { return std::make_unique<compiled_resource_loader>(); } }
-	};
+using namespace noi_engine_game;
 
 auto main(const int argc, char** argv) -> int
 {
-	auto provider = game_config::get_resource_loader(RESOURCE_LOADERS);
+	noi_engine::sdl_game game(
+		std::string(game_config::name), game_config::window_width,
+		game_config::window_height, std::move(get_resource_loader()));
 
-	sdl_game game(
-		std::string(game_config::name),
-		game_config::window_width,
-		game_config::window_height, std::move(provider));
+	register_scripts(game);
+
+	auto main_scene = game.resources().load_scene(game_config::start_scene);
+	game.set_scene(std::move(main_scene));
 
 	return game.run(argc, argv);
 }

@@ -1,14 +1,121 @@
 {
-  "name": "Main",
+  "name": "MainScene",
   "resources": {
-    "textures": []
+    "textures": [],
+    "meshes": [
+      {
+        "name": "quad_2d",
+        "path": "resources/meshes/quad_2d.mesh"
+      }
+    ],
+    "shaders": [
+      {
+        "name": "color_shader",
+        "path": "resources/shaders/color_shader/index.shader"
+      }
+    ],
+    "scripts": [
+      "player_script",
+      "camera_script"
+    ],
+    "materials": [
+      {
+        "name": "blue_mesh",
+        "shader": "color_shader",
+        "textures": [],
+        "parameters": [],
+        "colors": [
+          {
+            "name": "u_color",
+            "value": "#0000ff"
+          }
+        ]
+      },
+      {
+        "name": "green_mesh",
+        "shader": "color_shader",
+        "textures": [],
+        "parameters": [],
+        "colors": [
+          {
+            "name": "u_color",
+            "value": "#00ff00ff"
+          }
+        ]
+      }
+    ]
   },
   "entities": [
+    {
+      "name": "player",
+      "components": [
+        {
+          "type": "transform"
+        },
+        {
+          "type": "render_layer",
+          "properties": {
+            "order": 0
+          }
+        },
+        {
+          "type": "mesh_renderer",
+          "properties": {
+            "mesh": "quad_2d",
+            "material": "green_mesh"
+          }
+        },
+        {
+          "type": "scripts",
+          "properties": {
+            "names": [
+              "player_script"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "background",
+      "components": [
+        {
+          "type": "transform",
+          "properties": {
+            "scale": [
+              2,
+              2,
+              1
+            ]
+          }
+        },
+        {
+          "type": "render_layer",
+          "properties": {
+            "order": -1
+          }
+        },
+        {
+          "type": "mesh_renderer",
+          "properties": {
+            "mesh": "quad_2d",
+            "material": "blue_mesh"
+          }
+        }
+      ]
+    },
     {
       "name": "main_camera",
       "components": [
         {
           "type": "camera_2d"
+        },
+        {
+          "type": "scripts",
+          "properties": {
+            "names": [
+              "camera_script"
+            ]
+          }
         }
       ]
     }

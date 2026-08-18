@@ -13,6 +13,15 @@ set(NOI_ENGINE_GAME_HEADERS)
 
 set(NOI_ENGINE_GAME_SOURCES
         sources/main.cpp
+        sources/config/config.hpp
+        sources/config/config.cpp
+        sources/signals/moved_signal.hpp
+        sources/scripts/camera_script.hpp
+        sources/scripts/player_script.hpp
+        sources/scripts/player_script.cpp
+        sources/scripts/scripts_register.hpp
+        sources/scripts/scripts_register.cpp
+        sources/scripts/camera_script.cpp
 )
 
 add_executable(noi_engine_game ${NOI_ENGINE_GAME_SOURCES} ${NOI_ENGINE_GAME_HEADERS})
