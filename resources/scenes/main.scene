@@ -1,0 +1,16 @@
+{
+  "name": "Main",
+  "resources": {
+    "textures": []
+  },
+  "entities": [
+    {
+      "name": "main_camera",
+      "components": [
+        {
+          "type": "camera_2d"
+        }
+      ]
+    }
+  ]
+}

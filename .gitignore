@@ -22,4 +22,4 @@ CMakeUserPresets.json
 .idea
 libs
 .noi_engine
-.resources_packer
+.resources_compiler

@@ -18,13 +18,13 @@ namespace game_config
     inline constexpr int window_height = @GAME_WINDOW_HEIGHT@;
 
     template <typename T>
-    auto get_asset_provider(
-        const std::unordered_map<std::string, std::function<std::shared_ptr<T>()>>& asset_providers)
-        -> std::shared_ptr<T>
+    auto get_resource_loader(
+        const std::unordered_map<std::string, std::function<std::unique_ptr<T>()>>& resource_loaders)
+        -> std::unique_ptr<T>
     {
-        auto it = asset_providers.find(std::string(asset_provider));
-        if (it != asset_providers.end()) {
-            return it->second();
+        auto it = resource_loaders.find(std::string(asset_provider));
+        if (it != resource_loaders.end()) {
+            return std::move(it->second());
         }
         return nullptr;
     }

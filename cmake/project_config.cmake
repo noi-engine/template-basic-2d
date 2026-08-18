@@ -17,9 +17,9 @@ string(JSON GAME_WINDOW_WIDTH GET "${PROJECT_JSON_CONTENT}" window width)
 string(JSON GAME_WINDOW_HEIGHT GET "${PROJECT_JSON_CONTENT}" window height)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(GAME_ASSET_PROVIDER_CLASS "filesystem") # TODO
+    set(GAME_ASSET_PROVIDER_CLASS "compiled") # TODO
 else()
-    set(GAME_ASSET_PROVIDER_CLASS "filesystem")
+    set(GAME_ASSET_PROVIDER_CLASS "source")
 endif()
 
 set(GAME_GENERATED_DIR "${CMAKE_BINARY_DIR}/generated")
