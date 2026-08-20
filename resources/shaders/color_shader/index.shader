@@ -1,4 +1,4 @@
 {
-  "vertex": "resources/shaders/color_shader/vertex.glsl",
-  "fragment": "resources/shaders/color_shader/fragment.glsl"
+  "vertex": "shaders/color_shader/vertex.glsl",
+  "fragment": "shaders/color_shader/fragment.glsl"
 }

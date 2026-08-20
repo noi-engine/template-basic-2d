@@ -5,13 +5,13 @@
     "meshes": [
       {
         "name": "quad_2d",
-        "path": "resources/meshes/quad_2d.mesh"
+        "path": "meshes/quad_2d.mesh"
       }
     ],
     "shaders": [
       {
         "name": "color_shader",
-        "path": "resources/shaders/color_shader/index.shader"
+        "path": "shaders/color_shader/index.shader"
       }
     ],
     "scripts": [
