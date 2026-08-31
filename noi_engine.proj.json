@@ -3,6 +3,7 @@
   "version": "{{PROJECT_VERSION}}",
   "category": "{{PROJECT_CATEGORY}}",
   "start_scene": "scenes/main.scene",
+  "scripts_library": "build/debug/bin/libs/libgame_scripts.so",
   "window": {
     "width": 900,
     "height": 700

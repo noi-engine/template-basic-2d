@@ -9,19 +9,37 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 include(cmake/project_config.cmake)
 include(cmake/copy_directory.cmake)
 
+set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+
+set(NOI_ENGINE_GAME_SCRIPTS_SOURCES
+        sources/signals/moved_signal.hpp
+        sources/scripts/camera_script.hpp
+        sources/scripts/camera_script.cpp
+        sources/scripts/player_script.hpp
+        sources/scripts/player_script.cpp
+        sources/scripts/scripts_register.hpp
+        sources/scripts/scripts_register.cpp
+)
+
+add_library(game_scripts SHARED ${NOI_ENGINE_GAME_SCRIPTS_SOURCES})
+
+target_include_directories(game_scripts PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/.noi_engine/include)
+target_link_directories(game_scripts PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/.noi_engine/libs)
+target_link_libraries(game_scripts PRIVATE noi_engine)
+
+set_target_properties(game_scripts PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/libs"
+    BUILD_RPATH "$ORIGIN"
+    INSTALL_RPATH "$ORIGIN"
+)
+
 set(NOI_ENGINE_GAME_HEADERS)
 
 set(NOI_ENGINE_GAME_SOURCES
         sources/main.cpp
         sources/config/config.hpp
         sources/config/config.cpp
-        sources/signals/moved_signal.hpp
-        sources/scripts/camera_script.hpp
-        sources/scripts/player_script.hpp
-        sources/scripts/player_script.cpp
-        sources/scripts/scripts_register.hpp
-        sources/scripts/scripts_register.cpp
-        sources/scripts/camera_script.cpp
 )
 
 add_executable(noi_engine_game ${NOI_ENGINE_GAME_SOURCES} ${NOI_ENGINE_GAME_HEADERS})
@@ -32,10 +50,10 @@ target_link_directories(noi_engine_game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/.noi
 target_link_libraries(noi_engine_game PRIVATE noi_engine)
 # Engine(end)
 
+target_link_libraries(noi_engine_game PRIVATE game_scripts)
+
 set_target_properties(noi_engine_game PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set_target_properties(noi_engine_game PROPERTIES
     BUILD_RPATH "$ORIGIN/libs"
     INSTALL_RPATH "$ORIGIN/libs"

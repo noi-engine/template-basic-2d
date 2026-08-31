@@ -9,3 +9,8 @@ auto noi_engine_game::register_scripts(noi_engine::game &game) -> void
   NOI_ENGINE_REGISTER_SCRIPT(player_script);
   NOI_ENGINE_REGISTER_SCRIPT(camera_script);
 }
+
+auto noi_engine_register_scripts(noi_engine::game &game) -> void
+{
+  noi_engine_game::register_scripts(game);
+}

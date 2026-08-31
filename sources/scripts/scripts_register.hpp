@@ -6,3 +6,5 @@ namespace noi_engine_game
 {
   auto register_scripts(noi_engine::game &game) -> void;
 }
+
+extern "C" auto noi_engine_register_scripts(noi_engine::game &game) -> void;
