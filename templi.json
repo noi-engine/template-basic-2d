@@ -45,6 +45,12 @@
       "name": "PROJECT_VERSION",
       "type": "TEXT",
       "validators": []
+    },
+    {
+      "label": "ENGINE_VERSION",
+      "name": "ENGINE_VERSION",
+      "type": "TEXT",
+      "validators": []
     }
   ]
 }
