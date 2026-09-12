@@ -127,6 +127,15 @@ int noi_engine_editor_bridge_set_component_property(
     const char* component_type_utf8, const char* property_name_utf8,
     noi_engine_editor_bridge_property_value value);
 
+/*
+ * Adds a default-constructed component of the given type to the entity. Returns non-zero
+ * on success; fails (returns 0) if the entity already has that component, the component
+ * type name is unrecognized, or no scene is loaded.
+ */
+int noi_engine_editor_bridge_add_component(
+    noi_engine_editor_bridge_game_handle handle, uint32_t entity_id, uint32_t entity_generation,
+    const char* component_type_utf8);
+
 #ifdef __cplusplus
 }
 #endif

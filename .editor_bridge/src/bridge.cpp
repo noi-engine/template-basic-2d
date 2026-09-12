@@ -515,6 +515,77 @@ namespace
             return false;
         }
 
+        [[nodiscard]] auto add_component(const uint32_t entity_id, const uint32_t entity_generation,
+                                          const std::string& component_type) -> bool
+        {
+            if (!this->get_current_scene())
+            {
+                return false;
+            }
+
+            auto& world = this->get_world();
+            const noi_engine::entity e{entity_id, entity_generation};
+
+            if (component_type == "transform")
+            {
+                if (world.has<noi_engine::transform>(e)) return false;
+                world.add<noi_engine::transform>(e, {});
+                return true;
+            }
+            if (component_type == "camera_2d")
+            {
+                if (world.has<noi_engine::camera_2d>(e)) return false;
+                world.add<noi_engine::camera_2d>(e, {});
+                return true;
+            }
+            if (component_type == "camera_3d")
+            {
+                if (world.has<noi_engine::camera_3d>(e)) return false;
+                world.add<noi_engine::camera_3d>(e, {});
+                return true;
+            }
+            if (component_type == "orbit_camera")
+            {
+                if (world.has<noi_engine::orbit_camera>(e)) return false;
+                world.add<noi_engine::orbit_camera>(e, {});
+                return true;
+            }
+            if (component_type == "render_layer")
+            {
+                if (world.has<noi_engine::render_layer>(e)) return false;
+                world.add<noi_engine::render_layer>(e, {});
+                return true;
+            }
+            if (component_type == "name_component")
+            {
+                if (world.has<noi_engine::name_component>(e)) return false;
+                world.add<noi_engine::name_component>(e, {});
+                return true;
+            }
+            if (component_type == "mesh_renderer")
+            {
+                if (world.has<noi_engine::mesh_renderer>(e)) return false;
+                world.add<noi_engine::mesh_renderer>(e, {});
+                return true;
+            }
+            if (component_type == "mesh_renderer_properties")
+            {
+                if (world.has<noi_engine::mesh_renderer_properties>(e)) return false;
+                world.add<noi_engine::mesh_renderer_properties>(e, {});
+                return true;
+            }
+            if (component_type == "script_component")
+            {
+                if (world.has<noi_engine::script_component>(e)) return false;
+                world.add<noi_engine::script_component>(e, {});
+                return true;
+            }
+
+            // world_matrix is engine-managed (recomputed from transform each frame) and is
+            // intentionally not addable by hand.
+            return false;
+        }
+
         auto load_scripts(const std::string& scripts_library_path) -> bool
         {
             if (m_scripts_library_handle)
@@ -658,6 +729,16 @@ int noi_engine_editor_bridge_set_component_property(
     return reinterpret_cast<bridge_game*>(handle)->set_component_property(
                entity_id, entity_generation, component_type_utf8 ? component_type_utf8 : "",
                property_name_utf8 ? property_name_utf8 : "", value)
+               ? 1
+               : 0;
+}
+
+int noi_engine_editor_bridge_add_component(const noi_engine_editor_bridge_game_handle handle,
+                                            const uint32_t entity_id, const uint32_t entity_generation,
+                                            const char* component_type_utf8)
+{
+    return reinterpret_cast<bridge_game*>(handle)->add_component(
+               entity_id, entity_generation, component_type_utf8 ? component_type_utf8 : "")
                ? 1
                : 0;
 }
