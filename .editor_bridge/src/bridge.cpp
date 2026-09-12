@@ -236,6 +236,28 @@ namespace
                 callback(user_data, name, pv, read_only ? 1 : 0);
             };
 
+            const auto emit_vec4 = [&](const char* name, const glm::vec4& v, const bool read_only)
+            {
+                noi_engine_editor_bridge_property_value pv{};
+                pv.type = NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_VEC4;
+                pv.number[0] = v.x;
+                pv.number[1] = v.y;
+                pv.number[2] = v.z;
+                pv.number[3] = v.w;
+                callback(user_data, name, pv, read_only ? 1 : 0);
+            };
+
+            const auto emit_resource_ref = [&](const char* name, const std::string& label,
+                                                const noi_engine_editor_bridge_resource_type resource_type,
+                                                const bool read_only)
+            {
+                noi_engine_editor_bridge_property_value pv{};
+                pv.type = NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_RESOURCE_REF;
+                pv.text = label.c_str();
+                pv.resource_type = resource_type;
+                callback(user_data, name, pv, read_only ? 1 : 0);
+            };
+
             if (component_type == "transform" && world.has<noi_engine::transform>(e))
             {
                 const auto& t = world.get<noi_engine::transform>(e);
@@ -290,27 +312,44 @@ namespace
                 auto& resources_ref = this->resources();
                 const std::string mesh_label{resources_ref.get_label<noi_engine::mesh>(mr.m_mesh)};
                 const std::string material_label{resources_ref.get_label<noi_engine::material>(mr.m_material)};
-                emit_string("mesh", mesh_label, true);
-                emit_string("material", material_label, true);
+                emit_resource_ref("mesh", mesh_label, NOI_ENGINE_EDITOR_BRIDGE_RESOURCE_MESH, false);
+                emit_resource_ref("material", material_label, NOI_ENGINE_EDITOR_BRIDGE_RESOURCE_MATERIAL, false);
+            }
+            else if (component_type == "mesh_renderer_properties" &&
+                     world.has<noi_engine::mesh_renderer_properties>(e))
+            {
+                const auto& mrp = world.get<noi_engine::mesh_renderer_properties>(e);
+                auto& resources_ref = this->resources();
+
+                for (const auto& [key, v] : mrp.m_parameters)
+                {
+                    emit_float(("param:" + key).c_str(), v, false);
+                }
+                for (const auto& [key, v] : mrp.m_colors)
+                {
+                    emit_vec4(("color:" + key).c_str(), v, false);
+                }
+                for (const auto& [key, handle] : mrp.m_textures)
+                {
+                    const std::string label{resources_ref.get_label<noi_engine::texture>(handle)};
+                    emit_resource_ref(("texture:" + key).c_str(), label, NOI_ENGINE_EDITOR_BRIDGE_RESOURCE_TEXTURE,
+                                       false);
+                }
             }
             else if (component_type == "script_component" && world.has<noi_engine::script_component>(e))
             {
                 const auto& sc = world.get<noi_engine::script_component>(e);
                 auto& resources_ref = this->resources();
-                std::string scripts_label;
-                for (const auto& handle : sc.scripts)
+
+                for (size_t i = 0; i < sc.scripts.size(); ++i)
                 {
-                    if (!scripts_label.empty())
-                    {
-                        scripts_label += ",";
-                    }
-                    scripts_label += resources_ref.get_label<noi_engine::script>(handle);
+                    const std::string label{resources_ref.get_label<noi_engine::script>(sc.scripts[i])};
+                    const std::string prop_name = "scripts[" + std::to_string(i) + "]";
+                    emit_resource_ref(prop_name.c_str(), label, NOI_ENGINE_EDITOR_BRIDGE_RESOURCE_SCRIPT, false);
                 }
-                emit_string("scripts", scripts_label, true);
                 emit_bool("created", sc.created, true);
             }
-            // mesh_renderer_properties and world_matrix intentionally expose no editable
-            // properties yet (map-based fields / fully computed each frame, respectively).
+            // world_matrix intentionally exposes no editable properties (fully computed each frame).
         }
 
         [[nodiscard]] auto set_component_property(const uint32_t entity_id, const uint32_t entity_generation,
@@ -411,8 +450,68 @@ namespace
                 return true;
             }
 
-            // mesh_renderer/script_component fields are read-only (resolved resource labels);
-            // mesh_renderer_properties and world_matrix expose no editable properties yet.
+            if (component_type == "mesh_renderer" && world.has<noi_engine::mesh_renderer>(e) &&
+                value.type == NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_RESOURCE_REF)
+            {
+                auto& mr = world.get<noi_engine::mesh_renderer>(e);
+                const std::string label = value.text ? value.text : "";
+
+                if (property_name == "mesh")
+                {
+                    mr.m_mesh = this->resources().get_handle<noi_engine::mesh>(label);
+                    return true;
+                }
+                if (property_name == "material")
+                {
+                    mr.m_material = this->resources().get_handle<noi_engine::material>(label);
+                    return true;
+                }
+                return false;
+            }
+
+            if (component_type == "mesh_renderer_properties" && world.has<noi_engine::mesh_renderer_properties>(e))
+            {
+                auto& mrp = world.get<noi_engine::mesh_renderer_properties>(e);
+
+                if (property_name.rfind("param:", 0) == 0 && value.type == NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_FLOAT)
+                {
+                    mrp.m_parameters[property_name.substr(6)] = value.number[0];
+                    return true;
+                }
+                if (property_name.rfind("color:", 0) == 0 && value.type == NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_VEC4)
+                {
+                    mrp.m_colors[property_name.substr(6)] =
+                        glm::vec4{value.number[0], value.number[1], value.number[2], value.number[3]};
+                    return true;
+                }
+                if (property_name.rfind("texture:", 0) == 0 &&
+                    value.type == NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_RESOURCE_REF)
+                {
+                    const std::string label = value.text ? value.text : "";
+                    mrp.m_textures[property_name.substr(8)] = this->resources().get_handle<noi_engine::texture>(label);
+                    return true;
+                }
+                return false;
+            }
+
+            if (component_type == "script_component" && world.has<noi_engine::script_component>(e) &&
+                value.type == NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_RESOURCE_REF &&
+                property_name.rfind("scripts[", 0) == 0 && !property_name.empty() && property_name.back() == ']')
+            {
+                auto& sc = world.get<noi_engine::script_component>(e);
+                const auto index_str = property_name.substr(8, property_name.size() - 9);
+                const auto index = static_cast<size_t>(std::stoul(index_str));
+
+                if (index < sc.scripts.size())
+                {
+                    const std::string label = value.text ? value.text : "";
+                    sc.scripts[index] = this->resources().get_handle<noi_engine::script>(label);
+                    return true;
+                }
+                return false;
+            }
+
+            // world_matrix exposes no editable properties (fully computed each frame).
             return false;
         }
 

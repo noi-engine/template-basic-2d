@@ -37,20 +37,27 @@ typedef void (*noi_engine_editor_bridge_entity_entry_callback)(
 
 typedef enum noi_engine_editor_bridge_property_type
 {
-    NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_FLOAT  = 0,
-    NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_VEC3   = 1,
-    NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_STRING = 2,
-    NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_BOOL   = 3
+    NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_FLOAT        = 0,
+    NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_VEC3         = 1,
+    NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_STRING       = 2,
+    NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_BOOL         = 3,
+    NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_VEC4         = 4,
+    /* text holds the currently-bound resource's label (may be empty if unbound); resource_type
+     * says which of the 5 loaded-resource pools the editor should offer as candidates. */
+    NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_RESOURCE_REF = 5
 } noi_engine_editor_bridge_property_type;
 
 /* Tagged union of a single property's value. Only the member matching `type` is valid:
- * FLOAT uses number[0]; VEC3 uses number[0..2]; STRING uses text (may be NULL); BOOL uses flag. */
+ * FLOAT uses number[0]; VEC3 uses number[0..2]; VEC4 uses number[0..3]; STRING and
+ * RESOURCE_REF use text (may be NULL/empty); BOOL uses flag; RESOURCE_REF also uses
+ * resource_type to say which resource kind it references. */
 typedef struct noi_engine_editor_bridge_property_value
 {
     noi_engine_editor_bridge_property_type type;
-    float number[3];
+    float number[4];
     const char* text;
     int flag;
+    noi_engine_editor_bridge_resource_type resource_type;
 } noi_engine_editor_bridge_property_value;
 
 typedef void (*noi_engine_editor_bridge_property_entry_callback)(
