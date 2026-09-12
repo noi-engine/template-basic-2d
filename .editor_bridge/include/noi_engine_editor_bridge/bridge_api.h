@@ -136,6 +136,21 @@ int noi_engine_editor_bridge_add_component(
     noi_engine_editor_bridge_game_handle handle, uint32_t entity_id, uint32_t entity_generation,
     const char* component_type_utf8);
 
+/*
+ * Synchronously invokes callback once per editable property of the material identified by
+ * (material_id, material_generation): always "shader" (RESOURCE_REF, SHADER), plus this
+ * material's own color/parameter/texture entries (same "color:"/"param:"/"texture:" name
+ * prefixing as component properties). No-op if the handle is stale/invalid.
+ */
+void noi_engine_editor_bridge_enumerate_material_properties(
+    noi_engine_editor_bridge_game_handle handle, uint32_t material_id, uint32_t material_generation,
+    noi_engine_editor_bridge_property_entry_callback callback, void* user_data);
+
+/* Writes a single property back onto a material. Returns non-zero on success. */
+int noi_engine_editor_bridge_set_material_property(
+    noi_engine_editor_bridge_game_handle handle, uint32_t material_id, uint32_t material_generation,
+    const char* property_name_utf8, noi_engine_editor_bridge_property_value value);
+
 #ifdef __cplusplus
 }
 #endif
