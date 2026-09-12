@@ -1,9 +1,6 @@
 {
   "name": "MainScene",
   "resources": {
-    "textures": [],
-    "shaders": [],
-    "materials": [],
     "scripts": [
       "player_script",
       "camera_script"
@@ -25,8 +22,16 @@
         {
           "type": "mesh_renderer",
           "properties": {
-            "mesh": "quad_2d",
-            "material": "green_mesh"
+            "mesh": "meshes:quad_2d",
+            "material": "materials:color",
+            "material_properties": {
+              "colors": [
+                {
+                  "name": "u_color",
+                  "value": "#0000ffff"
+                }
+              ]
+            }
           }
         },
         {
@@ -35,34 +40,6 @@
             "names": [
               "player_script"
             ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "background",
-      "components": [
-        {
-          "type": "transform",
-          "properties": {
-            "scale": [
-              2,
-              2,
-              1
-            ]
-          }
-        },
-        {
-          "type": "render_layer",
-          "properties": {
-            "order": -1
-          }
-        },
-        {
-          "type": "mesh_renderer",
-          "properties": {
-            "mesh": "quad_2d",
-            "material": "blue_mesh"
           }
         }
       ]

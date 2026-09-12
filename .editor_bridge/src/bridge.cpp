@@ -11,8 +11,18 @@
 #include <glm/glm.hpp>
 
 #include <noi_engine/core/components/camera_2d.hpp>
+#include <noi_engine/core/components/camera_3d.hpp>
 #include <noi_engine/core/components/dirty.hpp>
+#include <noi_engine/core/components/mesh_renderer.hpp>
+#include <noi_engine/core/components/mesh_renderer_properties.hpp>
+#include <noi_engine/core/components/name_component.hpp>
+#include <noi_engine/core/components/orbit_camera.hpp>
+#include <noi_engine/core/components/render_layer.hpp>
+#include <noi_engine/core/components/script_component.hpp>
 #include <noi_engine/core/components/transform.hpp>
+#include <noi_engine/core/components/world_matrix.hpp>
+#include <noi_engine/core/ecs/entity.hpp>
+#include <noi_engine/core/ecs/world.hpp>
 #include <noi_engine/core/game.hpp>
 #include <noi_engine/core/renderer/renderer.hpp>
 #include <noi_engine/core/resources/resource_loader.hpp>
@@ -36,10 +46,12 @@ namespace
 
         ~bridge_game() override
         {
-            if (m_scripts_library_handle)
-            {
-                dlclose(m_scripts_library_handle);
-            }
+            // Intentionally not dlclose()-ing m_scripts_library_handle here: this destructor body
+            // runs *before* the base noi_engine::game destructor, which tears down the scene/world -
+            // including any entities holding instances of script classes whose code lives in this
+            // library. Unloading it first leaves their vtables/destructors dangling and crashes.
+            // Leaking the mapping for the rest of the process's life (reclaimed at exit) is the
+            // safe tradeoff here.
         }
 
         auto run() -> void
@@ -102,6 +114,66 @@ namespace
             transform.scale = glm::vec3{world_width, world_height, 1.0};
 
             world.add<noi_engine::dirty<noi_engine::transform>>(camera_entity, noi_engine::dirty<noi_engine::transform>{});
+        }
+
+        auto enumerate_resources(const noi_engine_editor_bridge_resource_entry_callback callback,
+                                  void* const user_data) const -> void
+        {
+            if (!callback)
+            {
+                return;
+            }
+
+            auto& resources_ref = this->resources();
+
+            for (const auto& [label, handle] : resources_ref.meshes.entries())
+                callback(user_data, NOI_ENGINE_EDITOR_BRIDGE_RESOURCE_MESH, label.c_str(), handle.m_id, handle.m_generation);
+
+            for (const auto& [label, handle] : resources_ref.scripts.entries())
+                callback(user_data, NOI_ENGINE_EDITOR_BRIDGE_RESOURCE_SCRIPT, label.c_str(), handle.m_id, handle.m_generation);
+
+            for (const auto& [label, handle] : resources_ref.shaders.entries())
+                callback(user_data, NOI_ENGINE_EDITOR_BRIDGE_RESOURCE_SHADER, label.c_str(), handle.m_id, handle.m_generation);
+
+            for (const auto& [label, handle] : resources_ref.textures.entries())
+                callback(user_data, NOI_ENGINE_EDITOR_BRIDGE_RESOURCE_TEXTURE, label.c_str(), handle.m_id, handle.m_generation);
+
+            for (const auto& [label, handle] : resources_ref.materials.entries())
+                callback(user_data, NOI_ENGINE_EDITOR_BRIDGE_RESOURCE_MATERIAL, label.c_str(), handle.m_id, handle.m_generation);
+        }
+
+        auto enumerate_entities(const noi_engine_editor_bridge_entity_entry_callback callback,
+                                 void* const user_data) -> void
+        {
+            if (!callback || !this->get_current_scene())
+            {
+                return;
+            }
+
+            auto& world = this->get_world();
+
+            for (const auto& e : world.get_entities())
+            {
+                std::string name;
+                if (world.has<noi_engine::name_component>(e))
+                {
+                    name = world.get<noi_engine::name_component>(e).name;
+                }
+
+                uint32_t component_count = 0;
+                if (world.has<noi_engine::camera_2d>(e)) ++component_count;
+                if (world.has<noi_engine::camera_3d>(e)) ++component_count;
+                if (world.has<noi_engine::mesh_renderer>(e)) ++component_count;
+                if (world.has<noi_engine::mesh_renderer_properties>(e)) ++component_count;
+                if (world.has<noi_engine::name_component>(e)) ++component_count;
+                if (world.has<noi_engine::orbit_camera>(e)) ++component_count;
+                if (world.has<noi_engine::render_layer>(e)) ++component_count;
+                if (world.has<noi_engine::script_component>(e)) ++component_count;
+                if (world.has<noi_engine::transform>(e)) ++component_count;
+                if (world.has<noi_engine::world_matrix>(e)) ++component_count;
+
+                callback(user_data, e.m_id, e.m_generation, name.c_str(), component_count);
+            }
         }
 
         auto load_scripts(const std::string& scripts_library_path) -> bool
@@ -214,4 +286,18 @@ int noi_engine_editor_bridge_load_scripts(const noi_engine_editor_bridge_game_ha
 const char* noi_engine_editor_bridge_engine_version(void)
 {
     return NOI_ENGINE_VERSION;
+}
+
+void noi_engine_editor_bridge_enumerate_resources(const noi_engine_editor_bridge_game_handle handle,
+                                                   const noi_engine_editor_bridge_resource_entry_callback callback,
+                                                   void* const user_data)
+{
+    reinterpret_cast<bridge_game*>(handle)->enumerate_resources(callback, user_data);
+}
+
+void noi_engine_editor_bridge_enumerate_entities(const noi_engine_editor_bridge_game_handle handle,
+                                                  const noi_engine_editor_bridge_entity_entry_callback callback,
+                                                  void* const user_data)
+{
+    reinterpret_cast<bridge_game*>(handle)->enumerate_entities(callback, user_data);
 }
