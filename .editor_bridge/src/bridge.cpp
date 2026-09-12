@@ -160,19 +160,32 @@ namespace
                     name = world.get<noi_engine::name_component>(e).name;
                 }
 
-                uint32_t component_count = 0;
-                if (world.has<noi_engine::camera_2d>(e)) ++component_count;
-                if (world.has<noi_engine::camera_3d>(e)) ++component_count;
-                if (world.has<noi_engine::mesh_renderer>(e)) ++component_count;
-                if (world.has<noi_engine::mesh_renderer_properties>(e)) ++component_count;
-                if (world.has<noi_engine::name_component>(e)) ++component_count;
-                if (world.has<noi_engine::orbit_camera>(e)) ++component_count;
-                if (world.has<noi_engine::render_layer>(e)) ++component_count;
-                if (world.has<noi_engine::script_component>(e)) ++component_count;
-                if (world.has<noi_engine::transform>(e)) ++component_count;
-                if (world.has<noi_engine::world_matrix>(e)) ++component_count;
+                std::string component_types;
+                const auto append_type = [&component_types](const char* type_name, const bool has)
+                {
+                    if (!has)
+                    {
+                        return;
+                    }
+                    if (!component_types.empty())
+                    {
+                        component_types += ",";
+                    }
+                    component_types += type_name;
+                };
 
-                callback(user_data, e.m_id, e.m_generation, name.c_str(), component_count);
+                append_type("camera_2d", world.has<noi_engine::camera_2d>(e));
+                append_type("camera_3d", world.has<noi_engine::camera_3d>(e));
+                append_type("mesh_renderer", world.has<noi_engine::mesh_renderer>(e));
+                append_type("mesh_renderer_properties", world.has<noi_engine::mesh_renderer_properties>(e));
+                append_type("name_component", world.has<noi_engine::name_component>(e));
+                append_type("orbit_camera", world.has<noi_engine::orbit_camera>(e));
+                append_type("render_layer", world.has<noi_engine::render_layer>(e));
+                append_type("script_component", world.has<noi_engine::script_component>(e));
+                append_type("transform", world.has<noi_engine::transform>(e));
+                append_type("world_matrix", world.has<noi_engine::world_matrix>(e));
+
+                callback(user_data, e.m_id, e.m_generation, name.c_str(), component_types.c_str());
             }
         }
 

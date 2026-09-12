@@ -33,7 +33,7 @@ typedef void (*noi_engine_editor_bridge_resource_entry_callback)(
 
 typedef void (*noi_engine_editor_bridge_entity_entry_callback)(
     void* user_data, uint32_t entity_id, uint32_t entity_generation,
-    const char* name_utf8, uint32_t component_count);
+    const char* name_utf8, const char* component_types_csv);
 
 /* Must be called once per process before any handle is created. */
 void noi_engine_editor_bridge_init_gl(noi_engine_editor_bridge_gl_proc_loader loader);
@@ -67,9 +67,11 @@ void noi_engine_editor_bridge_enumerate_resources(
 
 /*
  * Synchronously invokes callback once per currently-alive entity in the active scene's
- * world. name_utf8 is an empty string when the entity has no name component. Safe to call
- * any time; if no scene is loaded yet, callback is simply never invoked. Same lifetime
- * rules as noi_engine_editor_bridge_enumerate_resources apply to name_utf8.
+ * world. name_utf8 is an empty string when the entity has no name component.
+ * component_types_csv is a comma-separated list of the entity's attached component type
+ * names (e.g. "transform,mesh_renderer"), empty string if none. Safe to call any time; if
+ * no scene is loaded yet, callback is simply never invoked. Same lifetime rules as
+ * noi_engine_editor_bridge_enumerate_resources apply to both string arguments.
  */
 void noi_engine_editor_bridge_enumerate_entities(
     noi_engine_editor_bridge_game_handle handle,
