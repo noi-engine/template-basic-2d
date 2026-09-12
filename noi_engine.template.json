@@ -1,6 +1,6 @@
 {
-  "version": "0.0.103",
-  "noi_engine_version": "0.0.103",
+  "version": "0.0.104",
+  "noi_engine_version": "0.0.104",
   "resources_compiler_version": "0.0.1",
   "id": "template-basic-2d",
   "name": "2D Game Template",
