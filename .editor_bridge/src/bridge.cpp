@@ -189,6 +189,233 @@ namespace
             }
         }
 
+        auto enumerate_component_properties(const uint32_t entity_id, const uint32_t entity_generation,
+                                             const std::string& component_type,
+                                             const noi_engine_editor_bridge_property_entry_callback callback,
+                                             void* const user_data) -> void
+        {
+            if (!callback || !this->get_current_scene())
+            {
+                return;
+            }
+
+            auto& world = this->get_world();
+            const noi_engine::entity e{entity_id, entity_generation};
+
+            const auto emit_float = [&](const char* name, const float v, const bool read_only)
+            {
+                noi_engine_editor_bridge_property_value pv{};
+                pv.type = NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_FLOAT;
+                pv.number[0] = v;
+                callback(user_data, name, pv, read_only ? 1 : 0);
+            };
+
+            const auto emit_vec3 = [&](const char* name, const glm::vec3& v, const bool read_only)
+            {
+                noi_engine_editor_bridge_property_value pv{};
+                pv.type = NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_VEC3;
+                pv.number[0] = v.x;
+                pv.number[1] = v.y;
+                pv.number[2] = v.z;
+                callback(user_data, name, pv, read_only ? 1 : 0);
+            };
+
+            const auto emit_string = [&](const char* name, const std::string& s, const bool read_only)
+            {
+                noi_engine_editor_bridge_property_value pv{};
+                pv.type = NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_STRING;
+                pv.text = s.c_str();
+                callback(user_data, name, pv, read_only ? 1 : 0);
+            };
+
+            const auto emit_bool = [&](const char* name, const bool b, const bool read_only)
+            {
+                noi_engine_editor_bridge_property_value pv{};
+                pv.type = NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_BOOL;
+                pv.flag = b ? 1 : 0;
+                callback(user_data, name, pv, read_only ? 1 : 0);
+            };
+
+            if (component_type == "transform" && world.has<noi_engine::transform>(e))
+            {
+                const auto& t = world.get<noi_engine::transform>(e);
+                emit_vec3("position", t.position, false);
+                emit_vec3("rotation", t.rotation, false);
+                emit_vec3("scale", t.scale, false);
+            }
+            else if (component_type == "camera_2d" && world.has<noi_engine::camera_2d>(e))
+            {
+                const auto& c = world.get<noi_engine::camera_2d>(e);
+                emit_float("zoom", c.zoom, false);
+                emit_float("near_plane", c.near_plane, false);
+                emit_float("far_plane", c.far_plane, false);
+                emit_float("aspect_ratio", c.aspect_ratio, false);
+                emit_float("orthographic_size", c.orthographic_size, false);
+            }
+            else if (component_type == "camera_3d" && world.has<noi_engine::camera_3d>(e))
+            {
+                const auto& c = world.get<noi_engine::camera_3d>(e);
+                emit_float("fov", c.fov, false);
+                emit_float("near_plane", c.near_plane, false);
+                emit_float("far_plane", c.far_plane, false);
+                emit_float("aspect_ratio", c.aspect_ratio, false);
+            }
+            else if (component_type == "orbit_camera" && world.has<noi_engine::orbit_camera>(e))
+            {
+                const auto& c = world.get<noi_engine::orbit_camera>(e);
+                emit_vec3("target", c.target, false);
+                emit_float("distance", c.distance, false);
+                emit_float("yaw", c.yaw, false);
+                emit_float("pitch", c.pitch, false);
+                emit_float("sensitivity", c.sensitivity, false);
+                emit_float("zoom_speed", c.zoom_speed, false);
+                emit_float("min_distance", c.min_distance, false);
+                emit_float("max_distance", c.max_distance, false);
+                emit_float("min_pitch", c.min_pitch, false);
+                emit_float("max_pitch", c.max_pitch, false);
+            }
+            else if (component_type == "render_layer" && world.has<noi_engine::render_layer>(e))
+            {
+                const auto& r = world.get<noi_engine::render_layer>(e);
+                emit_float("order", static_cast<float>(r.order), false);
+            }
+            else if (component_type == "name_component" && world.has<noi_engine::name_component>(e))
+            {
+                const auto& n = world.get<noi_engine::name_component>(e);
+                emit_string("name", n.name, false);
+            }
+            else if (component_type == "mesh_renderer" && world.has<noi_engine::mesh_renderer>(e))
+            {
+                const auto& mr = world.get<noi_engine::mesh_renderer>(e);
+                auto& resources_ref = this->resources();
+                const std::string mesh_label{resources_ref.get_label<noi_engine::mesh>(mr.m_mesh)};
+                const std::string material_label{resources_ref.get_label<noi_engine::material>(mr.m_material)};
+                emit_string("mesh", mesh_label, true);
+                emit_string("material", material_label, true);
+            }
+            else if (component_type == "script_component" && world.has<noi_engine::script_component>(e))
+            {
+                const auto& sc = world.get<noi_engine::script_component>(e);
+                auto& resources_ref = this->resources();
+                std::string scripts_label;
+                for (const auto& handle : sc.scripts)
+                {
+                    if (!scripts_label.empty())
+                    {
+                        scripts_label += ",";
+                    }
+                    scripts_label += resources_ref.get_label<noi_engine::script>(handle);
+                }
+                emit_string("scripts", scripts_label, true);
+                emit_bool("created", sc.created, true);
+            }
+            // mesh_renderer_properties and world_matrix intentionally expose no editable
+            // properties yet (map-based fields / fully computed each frame, respectively).
+        }
+
+        [[nodiscard]] auto set_component_property(const uint32_t entity_id, const uint32_t entity_generation,
+                                                   const std::string& component_type,
+                                                   const std::string& property_name,
+                                                   const noi_engine_editor_bridge_property_value& value) -> bool
+        {
+            if (!this->get_current_scene())
+            {
+                return false;
+            }
+
+            auto& world = this->get_world();
+            const noi_engine::entity e{entity_id, entity_generation};
+
+            if (component_type == "transform" && world.has<noi_engine::transform>(e) &&
+                value.type == NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_VEC3)
+            {
+                auto& t = world.get<noi_engine::transform>(e);
+                const glm::vec3 v{value.number[0], value.number[1], value.number[2]};
+
+                if (property_name == "position") { t.position = v; }
+                else if (property_name == "rotation") { t.rotation = v; }
+                else if (property_name == "scale") { t.scale = v; }
+                else { return false; }
+
+                world.add<noi_engine::dirty<noi_engine::transform>>(e, noi_engine::dirty<noi_engine::transform>{});
+                return true;
+            }
+
+            if (component_type == "camera_2d" && world.has<noi_engine::camera_2d>(e) &&
+                value.type == NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_FLOAT)
+            {
+                auto& c = world.get<noi_engine::camera_2d>(e);
+                const float v = value.number[0];
+
+                if (property_name == "zoom") { c.zoom = v; }
+                else if (property_name == "near_plane") { c.near_plane = v; }
+                else if (property_name == "far_plane") { c.far_plane = v; }
+                else if (property_name == "aspect_ratio") { c.aspect_ratio = v; }
+                else if (property_name == "orthographic_size") { c.orthographic_size = v; }
+                else { return false; }
+                return true;
+            }
+
+            if (component_type == "camera_3d" && world.has<noi_engine::camera_3d>(e) &&
+                value.type == NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_FLOAT)
+            {
+                auto& c = world.get<noi_engine::camera_3d>(e);
+                const float v = value.number[0];
+
+                if (property_name == "fov") { c.fov = v; }
+                else if (property_name == "near_plane") { c.near_plane = v; }
+                else if (property_name == "far_plane") { c.far_plane = v; }
+                else if (property_name == "aspect_ratio") { c.aspect_ratio = v; }
+                else { return false; }
+                return true;
+            }
+
+            if (component_type == "orbit_camera" && world.has<noi_engine::orbit_camera>(e))
+            {
+                auto& c = world.get<noi_engine::orbit_camera>(e);
+
+                if (property_name == "target" && value.type == NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_VEC3)
+                {
+                    c.target = glm::vec3{value.number[0], value.number[1], value.number[2]};
+                    return true;
+                }
+                if (value.type != NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_FLOAT)
+                {
+                    return false;
+                }
+                const float v = value.number[0];
+                if (property_name == "distance") { c.distance = v; }
+                else if (property_name == "yaw") { c.yaw = v; }
+                else if (property_name == "pitch") { c.pitch = v; }
+                else if (property_name == "sensitivity") { c.sensitivity = v; }
+                else if (property_name == "zoom_speed") { c.zoom_speed = v; }
+                else if (property_name == "min_distance") { c.min_distance = v; }
+                else if (property_name == "max_distance") { c.max_distance = v; }
+                else if (property_name == "min_pitch") { c.min_pitch = v; }
+                else if (property_name == "max_pitch") { c.max_pitch = v; }
+                else { return false; }
+                return true;
+            }
+
+            if (component_type == "render_layer" && world.has<noi_engine::render_layer>(e) &&
+                property_name == "order" && value.type == NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_FLOAT)
+            {
+                world.get<noi_engine::render_layer>(e).order = static_cast<int>(value.number[0]);
+                return true;
+            }
+
+            if (component_type == "name_component" && world.has<noi_engine::name_component>(e) &&
+                property_name == "name" && value.type == NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_STRING)
+            {
+                world.get<noi_engine::name_component>(e).name = value.text ? value.text : "";
+                return true;
+            }
+
+            // mesh_renderer/script_component fields are read-only (resolved resource labels);
+            // mesh_renderer_properties and world_matrix expose no editable properties yet.
+            return false;
+        }
+
         auto load_scripts(const std::string& scripts_library_path) -> bool
         {
             if (m_scripts_library_handle)
@@ -313,4 +540,25 @@ void noi_engine_editor_bridge_enumerate_entities(const noi_engine_editor_bridge_
                                                   void* const user_data)
 {
     reinterpret_cast<bridge_game*>(handle)->enumerate_entities(callback, user_data);
+}
+
+void noi_engine_editor_bridge_enumerate_component_properties(
+    const noi_engine_editor_bridge_game_handle handle, const uint32_t entity_id, const uint32_t entity_generation,
+    const char* component_type_utf8, const noi_engine_editor_bridge_property_entry_callback callback,
+    void* const user_data)
+{
+    reinterpret_cast<bridge_game*>(handle)->enumerate_component_properties(
+        entity_id, entity_generation, component_type_utf8 ? component_type_utf8 : "", callback, user_data);
+}
+
+int noi_engine_editor_bridge_set_component_property(
+    const noi_engine_editor_bridge_game_handle handle, const uint32_t entity_id, const uint32_t entity_generation,
+    const char* component_type_utf8, const char* property_name_utf8,
+    const noi_engine_editor_bridge_property_value value)
+{
+    return reinterpret_cast<bridge_game*>(handle)->set_component_property(
+               entity_id, entity_generation, component_type_utf8 ? component_type_utf8 : "",
+               property_name_utf8 ? property_name_utf8 : "", value)
+               ? 1
+               : 0;
 }

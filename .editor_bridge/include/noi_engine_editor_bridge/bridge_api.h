@@ -35,6 +35,28 @@ typedef void (*noi_engine_editor_bridge_entity_entry_callback)(
     void* user_data, uint32_t entity_id, uint32_t entity_generation,
     const char* name_utf8, const char* component_types_csv);
 
+typedef enum noi_engine_editor_bridge_property_type
+{
+    NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_FLOAT  = 0,
+    NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_VEC3   = 1,
+    NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_STRING = 2,
+    NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_BOOL   = 3
+} noi_engine_editor_bridge_property_type;
+
+/* Tagged union of a single property's value. Only the member matching `type` is valid:
+ * FLOAT uses number[0]; VEC3 uses number[0..2]; STRING uses text (may be NULL); BOOL uses flag. */
+typedef struct noi_engine_editor_bridge_property_value
+{
+    noi_engine_editor_bridge_property_type type;
+    float number[3];
+    const char* text;
+    int flag;
+} noi_engine_editor_bridge_property_value;
+
+typedef void (*noi_engine_editor_bridge_property_entry_callback)(
+    void* user_data, const char* property_name_utf8,
+    noi_engine_editor_bridge_property_value value, int read_only);
+
 /* Must be called once per process before any handle is created. */
 void noi_engine_editor_bridge_init_gl(noi_engine_editor_bridge_gl_proc_loader loader);
 
@@ -76,6 +98,27 @@ void noi_engine_editor_bridge_enumerate_resources(
 void noi_engine_editor_bridge_enumerate_entities(
     noi_engine_editor_bridge_game_handle handle,
     noi_engine_editor_bridge_entity_entry_callback callback, void* user_data);
+
+/*
+ * Synchronously invokes callback once per editable/viewable property of the given
+ * component type attached to the given entity. No-op if the entity or component doesn't
+ * exist. read_only is non-zero for properties that shouldn't be presented as editable
+ * (e.g. resolved resource-handle labels, computed matrices).
+ */
+void noi_engine_editor_bridge_enumerate_component_properties(
+    noi_engine_editor_bridge_game_handle handle, uint32_t entity_id, uint32_t entity_generation,
+    const char* component_type_utf8,
+    noi_engine_editor_bridge_property_entry_callback callback, void* user_data);
+
+/*
+ * Writes a single property back onto a component. Returns non-zero on success (entity,
+ * component, and property all found, and value.type matches what enumerate reported for
+ * that property). A no-op/failure on a read-only property.
+ */
+int noi_engine_editor_bridge_set_component_property(
+    noi_engine_editor_bridge_game_handle handle, uint32_t entity_id, uint32_t entity_generation,
+    const char* component_type_utf8, const char* property_name_utf8,
+    noi_engine_editor_bridge_property_value value);
 
 #ifdef __cplusplus
 }
