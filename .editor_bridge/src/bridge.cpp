@@ -72,11 +72,23 @@ namespace
             this->set_scene(path);
             auto& resources_ref = this->resources();
 
+            const float world_width = static_cast<float>(this->m_game_width) / PIXELS_PER_UNIT;
+            const float world_height = static_cast<float>(this->m_game_height) / PIXELS_PER_UNIT;
+
+            constexpr float GIZMO_BORDER_PIXELS = 2.0f;
+            const float border_thickness_x = (GIZMO_BORDER_PIXELS / PIXELS_PER_UNIT) / world_width;
+            const float border_thickness_y = (GIZMO_BORDER_PIXELS / PIXELS_PER_UNIT) / world_height;
+
+            const auto shader_handle = resources_ref.load_from_path<noi_engine::shader>(
+                "camera_gizmo_shader", "shaders/camera_gizmo_shader/index.shader");
+
             auto material = std::make_unique<noi_engine::material>();
             material->set_color("u_color", glm::vec4{1, 0, 0, 1});
-            material->set_shader(resources_ref.get_handle<noi_engine::shader>("color_shader"));
+            material->set_parameter("u_border_thickness_x", border_thickness_x);
+            material->set_parameter("u_border_thickness_y", border_thickness_y);
+            material->set_shader(shader_handle);
             const auto material_handle = resources_ref.load_instance(std::move(material));
-            const auto mesh_handle = resources_ref.get_handle<noi_engine::mesh>("quad_2d");
+            const auto mesh_handle = resources_ref.get_handle<noi_engine::mesh>("meshes:quad_2d");
 
             const auto camera_entity = this->get_current_scene()->get_camera_entity();
             auto& world = this->get_current_scene()->get_world();
@@ -87,8 +99,6 @@ namespace
                                                  });
 
             auto& transform = world.get<noi_engine::transform>(camera_entity);
-            const float world_width = static_cast<float>(this->m_game_width) / PIXELS_PER_UNIT;
-            const float world_height = static_cast<float>(this->m_game_height) / PIXELS_PER_UNIT;
             transform.scale = glm::vec3{world_width, world_height, 1.0};
 
             world.add<noi_engine::dirty<noi_engine::transform>>(camera_entity, noi_engine::dirty<noi_engine::transform>{});

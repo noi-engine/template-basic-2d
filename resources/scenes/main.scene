@@ -2,47 +2,11 @@
   "name": "MainScene",
   "resources": {
     "textures": [],
-    "meshes": [
-      {
-        "name": "quad_2d",
-        "path": "meshes/quad_2d.mesh"
-      }
-    ],
-    "shaders": [
-      {
-        "name": "color_shader",
-        "path": "shaders/color_shader/index.shader"
-      }
-    ],
+    "shaders": [],
+    "materials": [],
     "scripts": [
       "player_script",
       "camera_script"
-    ],
-    "materials": [
-      {
-        "name": "blue_mesh",
-        "shader": "color_shader",
-        "textures": [],
-        "parameters": [],
-        "colors": [
-          {
-            "name": "u_color",
-            "value": "#0000ff"
-          }
-        ]
-      },
-      {
-        "name": "green_mesh",
-        "shader": "color_shader",
-        "textures": [],
-        "parameters": [],
-        "colors": [
-          {
-            "name": "u_color",
-            "value": "#00ff00ff"
-          }
-        ]
-      }
     ]
   },
   "entities": [
