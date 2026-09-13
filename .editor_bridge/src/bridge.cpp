@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <unordered_set>
 
 #include <dlfcn.h>
 
@@ -24,6 +25,7 @@
 #include <noi_engine/core/ecs/entity.hpp>
 #include <noi_engine/core/ecs/world.hpp>
 #include <noi_engine/core/game.hpp>
+#include <noi_engine/core/input/input_state.hpp>
 #include <noi_engine/core/renderer/renderer.hpp>
 #include <noi_engine/core/resources/resource_loader.hpp>
 #include <noi_engine/core/timer.hpp>
@@ -63,6 +65,37 @@ namespace
             noi_engine::renderer::begin_frame();
             render();
             noi_engine::renderer::end_frame();
+
+            // Must run after this frame's update()/render() consumed the current edge state,
+            // and before the next frame's key deltas are applied (see set_key_pressed/released) -
+            // otherwise is_key_pressed()/is_key_released() could never reset.
+            this->input().begin_frame();
+        }
+
+        auto reset_timer() -> void
+        {
+            m_timer = noi_engine::timer{};
+        }
+
+        auto set_key_pressed(const int key) -> void
+        {
+            m_held_keys.insert(key);
+            this->input().set_key_pressed(static_cast<noi_engine::key_code>(key));
+        }
+
+        auto set_key_released(const int key) -> void
+        {
+            m_held_keys.erase(key);
+            this->input().set_key_released(static_cast<noi_engine::key_code>(key));
+        }
+
+        auto release_all_keys() -> void
+        {
+            for (const auto key : m_held_keys)
+            {
+                this->input().set_key_released(static_cast<noi_engine::key_code>(key));
+            }
+            m_held_keys.clear();
         }
 
         auto on_resize(const int width, const int height) -> void
@@ -760,6 +793,7 @@ namespace
         int m_game_height{};
         noi_engine::timer m_timer{};
         void* m_scripts_library_handle{nullptr};
+        std::unordered_set<int> m_held_keys{};
     };
 }
 
@@ -868,4 +902,24 @@ int noi_engine_editor_bridge_set_material_property(const noi_engine_editor_bridg
                material_id, material_generation, property_name_utf8 ? property_name_utf8 : "", value)
                ? 1
                : 0;
+}
+
+void noi_engine_editor_bridge_set_key_pressed(const noi_engine_editor_bridge_game_handle handle, const int key_code)
+{
+    reinterpret_cast<bridge_game*>(handle)->set_key_pressed(key_code);
+}
+
+void noi_engine_editor_bridge_set_key_released(const noi_engine_editor_bridge_game_handle handle, const int key_code)
+{
+    reinterpret_cast<bridge_game*>(handle)->set_key_released(key_code);
+}
+
+void noi_engine_editor_bridge_release_all_keys(const noi_engine_editor_bridge_game_handle handle)
+{
+    reinterpret_cast<bridge_game*>(handle)->release_all_keys();
+}
+
+void noi_engine_editor_bridge_reset_timer(const noi_engine_editor_bridge_game_handle handle)
+{
+    reinterpret_cast<bridge_game*>(handle)->reset_timer();
 }

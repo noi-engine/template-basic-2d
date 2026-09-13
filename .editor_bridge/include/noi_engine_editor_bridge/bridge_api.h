@@ -151,6 +151,23 @@ int noi_engine_editor_bridge_set_material_property(
     noi_engine_editor_bridge_game_handle handle, uint32_t material_id, uint32_t material_generation,
     const char* property_name_utf8, noi_engine_editor_bridge_property_value value);
 
+/*
+ * Keyboard-only input forwarding for Play mode. key_code matches noi_engine::key_code's
+ * numeric layout (SDL_Scancode-compatible - see noi_engine/core/input/input_codes.hpp).
+ */
+void noi_engine_editor_bridge_set_key_pressed(noi_engine_editor_bridge_game_handle handle, int key_code);
+void noi_engine_editor_bridge_set_key_released(noi_engine_editor_bridge_game_handle handle, int key_code);
+
+/* Releases every key the bridge still considers held (e.g. when Play mode stops). */
+void noi_engine_editor_bridge_release_all_keys(noi_engine_editor_bridge_game_handle handle);
+
+/*
+ * Re-syncs the bridge's frame-delta timer to "now". Call this exactly once when continuous
+ * Play-mode ticking starts, so the first tick's dt doesn't include time spent idle in the
+ * editor since the last on-demand render.
+ */
+void noi_engine_editor_bridge_reset_timer(noi_engine_editor_bridge_game_handle handle);
+
 #ifdef __cplusplus
 }
 #endif
