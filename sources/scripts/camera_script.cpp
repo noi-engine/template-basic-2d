@@ -18,7 +18,7 @@ auto noi_engine_game::camera_script::on_create(
         NOI_ENGINE_ACTION_FOLLOW({
                                  .target = signal.source,
                                  .follower = self,
-                                 .offset = {0.3f, 0.3f, 0.0f},
+                                 .offset = {0.0f, 0.0f, 0.0f},
                                  .smoothing = 0.3f
                                  });
     };

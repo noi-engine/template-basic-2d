@@ -62,22 +62,7 @@ set_target_properties(noi_engine_game PROPERTIES
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_copy_directory_dependency(noi_engine_game "resources" "${CMAKE_CURRENT_SOURCE_DIR}/resources" "${CMAKE_BINARY_DIR}/bin")
 
-    find_package(glm CONFIG REQUIRED)
-
-    add_library(noi_engine_editor_bridge SHARED .editor_bridge/src/bridge.cpp)
-
-    target_include_directories(noi_engine_editor_bridge PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/.editor_bridge/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/.noi_engine/include
-    )
-    target_link_directories(noi_engine_editor_bridge PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/.noi_engine/libs)
-    target_link_libraries(noi_engine_editor_bridge PRIVATE noi_engine glm::glm)
-
-    set_target_properties(noi_engine_editor_bridge PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/libs"
-        BUILD_RPATH "$ORIGIN"
-        INSTALL_RPATH "$ORIGIN"
-    )
+    add_subdirectory(.editor_bridge)
 else()
     include(.resources_compiler/ResourcesCompiler.cmake)
 

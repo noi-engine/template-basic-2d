@@ -52,17 +52,22 @@ auto noi_engine_game::player_script::on_update(
         direction = glm::normalize(direction);
     }
 
-    if (direction == glm::vec3{0.0f})
+    if (!NOI_ENGINE_HAS(transform))
     {
         return;
     }
 
-    if (NOI_ENGINE_HAS(transform))
+    if (direction != glm::vec3{0.0f})
     {
         auto& tr = NOI_ENGINE_GET(transform);
         tr.position += direction * dt * 3.0f /* TODO: Speed */ ;
 
         NOI_ENGINE_ADD_DIRTY(transform);
-        NOI_ENGINE_EMIT(moved_signal{self});
     }
+
+    // Emitted every frame regardless of movement, not just when direction != 0: camera_script's
+    // follow() is a single smoothing step per invocation, not an ongoing per-frame behavior, so it
+    // must be re-triggered every frame to keep converging - otherwise the camera freezes wherever
+    // it was left mid-lerp the instant movement keys are released.
+    NOI_ENGINE_EMIT(moved_signal{self});
 }
