@@ -427,7 +427,16 @@ namespace noi_engine_editor_bridge_detail
         if (component_type == "mesh_renderer")
         {
             if (world.has<noi_engine::mesh_renderer>(e)) return false;
-            world.add<noi_engine::mesh_renderer>(e, {});
+            // Default-constructing mesh_renderer{} leaves both handles at {id=0, generation=0},
+            // which only happens to resolve to something drawable because the builtin quad mesh
+            // and color material are always the very first mesh/material loaded (see
+            // game::init_builtin_resources()) - relying on that coincidence is fragile. Point at
+            // them explicitly instead, matching how the border gizmo above already looks up
+            // "meshes:quad_2d" by label rather than assuming a handle value.
+            world.add<noi_engine::mesh_renderer>(e, {
+                                                      .m_mesh = this->resources().get_handle<noi_engine::mesh>("meshes:quad_2d"),
+                                                      .m_material = this->resources().get_handle<noi_engine::material>("materials:color")
+                                                  });
             return true;
         }
         if (component_type == "mesh_renderer_properties")
