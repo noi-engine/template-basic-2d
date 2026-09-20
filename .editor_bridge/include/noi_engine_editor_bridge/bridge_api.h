@@ -183,6 +183,60 @@ void noi_engine_editor_bridge_set_grid_visible(noi_engine_editor_bridge_game_han
  */
 int noi_engine_editor_bridge_save_scene(noi_engine_editor_bridge_game_handle handle, const char* target_path_utf8);
 
+typedef struct noi_engine_editor_bridge_entity_ref
+{
+    uint32_t id;
+    uint32_t generation;
+} noi_engine_editor_bridge_entity_ref;
+
+/*
+ * Creates a new entity with only a name component attached (no transform, no anything else -
+ * "empty"). Returns {0, 0} if no scene is loaded.
+ */
+noi_engine_editor_bridge_entity_ref noi_engine_editor_bridge_create_entity(
+    noi_engine_editor_bridge_game_handle handle, const char* name_utf8);
+
+/*
+ * Destroys an entity. Returns non-zero on success; fails (returns 0) if the entity doesn't
+ * exist, or is the scene's camera entity or the editor's own reference-grid entity (neither
+ * is user-deletable).
+ */
+int noi_engine_editor_bridge_destroy_entity(
+    noi_engine_editor_bridge_game_handle handle, uint32_t entity_id, uint32_t entity_generation);
+
+/*
+ * Creates a new entity carrying a deep copy of every component the source entity has (except
+ * its name, which is set to new_name_utf8 instead). Returns {0, 0} if the source entity
+ * doesn't exist or no scene is loaded.
+ */
+noi_engine_editor_bridge_entity_ref noi_engine_editor_bridge_duplicate_entity(
+    noi_engine_editor_bridge_game_handle handle, uint32_t entity_id, uint32_t entity_generation,
+    const char* new_name_utf8);
+
+/*
+ * Removes a component from an entity. Returns non-zero on success; fails (returns 0) if the
+ * entity doesn't have that component, the component type name is unrecognized, or the type is
+ * "name_component"/"world_matrix" (identity / engine-managed, never removable).
+ */
+int noi_engine_editor_bridge_remove_component(
+    noi_engine_editor_bridge_game_handle handle, uint32_t entity_id, uint32_t entity_generation,
+    const char* component_type_utf8);
+
+/*
+ * Erases one dynamic "param:"/"color:"/"texture:" entry from a component's own property map
+ * (currently only mesh_renderer_properties has one). Returns non-zero if the entry existed and
+ * was removed.
+ */
+int noi_engine_editor_bridge_remove_component_property(
+    noi_engine_editor_bridge_game_handle handle, uint32_t entity_id, uint32_t entity_generation,
+    const char* component_type_utf8, const char* property_name_utf8);
+
+/* Same as noi_engine_editor_bridge_remove_component_property, but for a material resource's
+ * own "param:"/"color:"/"texture:" entries (see noi_engine_editor_bridge_set_material_property). */
+int noi_engine_editor_bridge_remove_material_property(
+    noi_engine_editor_bridge_game_handle handle, uint32_t material_id, uint32_t material_generation,
+    const char* property_name_utf8);
+
 #ifdef __cplusplus
 }
 #endif

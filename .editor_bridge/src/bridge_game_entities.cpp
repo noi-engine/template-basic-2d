@@ -1,5 +1,6 @@
 #include "bridge_game.hpp"
 
+#include <algorithm>
 #include <glm/glm.hpp>
 
 namespace noi_engine_editor_bridge_detail
@@ -16,6 +17,14 @@ namespace noi_engine_editor_bridge_detail
 
         for (const auto& e : world.get_entities())
         {
+            // The editor's own reference-grid entity (added in set_scene_2d()) is a rendering
+            // aid, not scene content - it has no name and isn't user-manageable, so keep it out
+            // of the Hierarchy entirely rather than showing an unnamed, undeletable ghost row.
+            if (m_has_grid_entity && e == m_grid_entity)
+            {
+                continue;
+            }
+
             std::string name;
             if (world.has<noi_engine::name_component>(e))
             {
@@ -455,5 +464,201 @@ namespace noi_engine_editor_bridge_detail
         // world_matrix is engine-managed (recomputed from transform each frame) and is
         // intentionally not addable by hand.
         return false;
+    }
+
+    auto bridge_game::remove_component(const uint32_t entity_id, const uint32_t entity_generation,
+                                        const std::string& component_type) -> bool
+    {
+        if (!this->get_current_scene())
+        {
+            return false;
+        }
+
+        auto& world = this->get_world();
+        const noi_engine::entity e{entity_id, entity_generation};
+
+        if (component_type == "transform" && world.has<noi_engine::transform>(e))
+        {
+            world.remove<noi_engine::transform>(e);
+            return true;
+        }
+        if (component_type == "camera_2d" && world.has<noi_engine::camera_2d>(e))
+        {
+            world.remove<noi_engine::camera_2d>(e);
+            return true;
+        }
+        if (component_type == "camera_3d" && world.has<noi_engine::camera_3d>(e))
+        {
+            world.remove<noi_engine::camera_3d>(e);
+            return true;
+        }
+        if (component_type == "orbit_camera" && world.has<noi_engine::orbit_camera>(e))
+        {
+            world.remove<noi_engine::orbit_camera>(e);
+            return true;
+        }
+        if (component_type == "render_layer" && world.has<noi_engine::render_layer>(e))
+        {
+            world.remove<noi_engine::render_layer>(e);
+            return true;
+        }
+        if (component_type == "mesh_renderer" && world.has<noi_engine::mesh_renderer>(e))
+        {
+            world.remove<noi_engine::mesh_renderer>(e);
+            return true;
+        }
+        if (component_type == "mesh_renderer_properties" && world.has<noi_engine::mesh_renderer_properties>(e))
+        {
+            world.remove<noi_engine::mesh_renderer_properties>(e);
+            return true;
+        }
+        if (component_type == "script_component" && world.has<noi_engine::script_component>(e))
+        {
+            world.remove<noi_engine::script_component>(e);
+            return true;
+        }
+
+        // name_component is an entity's identity (the Hierarchy relies on every entity having
+        // one) and world_matrix is engine-managed - neither is removable by hand.
+        return false;
+    }
+
+    auto bridge_game::remove_component_property(const uint32_t entity_id, const uint32_t entity_generation,
+                                                  const std::string& component_type,
+                                                  const std::string& property_name) -> bool
+    {
+        if (!this->get_current_scene())
+        {
+            return false;
+        }
+
+        auto& world = this->get_world();
+        const noi_engine::entity e{entity_id, entity_generation};
+
+        if (component_type != "mesh_renderer_properties" || !world.has<noi_engine::mesh_renderer_properties>(e))
+        {
+            return false;
+        }
+
+        auto& mrp = world.get<noi_engine::mesh_renderer_properties>(e);
+
+        if (property_name.rfind("param:", 0) == 0)
+        {
+            return mrp.m_parameters.erase(property_name.substr(6)) > 0;
+        }
+        if (property_name.rfind("color:", 0) == 0)
+        {
+            return mrp.m_colors.erase(property_name.substr(6)) > 0;
+        }
+        if (property_name.rfind("texture:", 0) == 0)
+        {
+            return mrp.m_textures.erase(property_name.substr(8)) > 0;
+        }
+
+        return false;
+    }
+
+    auto bridge_game::create_entity(const std::string& name) -> noi_engine::entity
+    {
+        if (!this->get_current_scene())
+        {
+            return {};
+        }
+
+        auto& world = this->get_world();
+        const auto e = world.create_entity();
+        noi_engine::name_component nc{};
+        nc.name = name;
+        world.add<noi_engine::name_component>(e, nc);
+        return e;
+    }
+
+    auto bridge_game::destroy_entity(const uint32_t entity_id, const uint32_t entity_generation) -> bool
+    {
+        if (!this->get_current_scene())
+        {
+            return false;
+        }
+
+        auto& world = this->get_world();
+        const noi_engine::entity e{entity_id, entity_generation};
+
+        // Neither the scene's camera entity nor the editor's own reference-grid entity is
+        // user-deletable - both are structural, not authored scene content.
+        if (e == this->get_current_scene()->get_camera_entity())
+        {
+            return false;
+        }
+        if (m_has_grid_entity && e == m_grid_entity)
+        {
+            return false;
+        }
+        if (std::ranges::find(world.get_entities(), e) == world.get_entities().end())
+        {
+            return false;
+        }
+
+        world.destroy_entity(e);
+        return true;
+    }
+
+    auto bridge_game::duplicate_entity(const uint32_t entity_id, const uint32_t entity_generation,
+                                        const std::string& new_name) -> noi_engine::entity
+    {
+        if (!this->get_current_scene())
+        {
+            return {};
+        }
+
+        auto& world = this->get_world();
+        const noi_engine::entity e{entity_id, entity_generation};
+
+        if (std::ranges::find(world.get_entities(), e) == world.get_entities().end())
+        {
+            return {};
+        }
+
+        const auto ne = world.create_entity();
+
+        // Deep-copy every component type an entity can carry (same list as add_component/
+        // enumerate_entities), except name_component (replaced with new_name) and world_matrix
+        // (engine-recomputed from transform, never copied by hand).
+        if (world.has<noi_engine::transform>(e))
+        {
+            world.add<noi_engine::transform>(ne, world.get<noi_engine::transform>(e));
+        }
+        if (world.has<noi_engine::camera_2d>(e))
+        {
+            world.add<noi_engine::camera_2d>(ne, world.get<noi_engine::camera_2d>(e));
+        }
+        if (world.has<noi_engine::camera_3d>(e))
+        {
+            world.add<noi_engine::camera_3d>(ne, world.get<noi_engine::camera_3d>(e));
+        }
+        if (world.has<noi_engine::orbit_camera>(e))
+        {
+            world.add<noi_engine::orbit_camera>(ne, world.get<noi_engine::orbit_camera>(e));
+        }
+        if (world.has<noi_engine::render_layer>(e))
+        {
+            world.add<noi_engine::render_layer>(ne, world.get<noi_engine::render_layer>(e));
+        }
+        if (world.has<noi_engine::mesh_renderer>(e))
+        {
+            world.add<noi_engine::mesh_renderer>(ne, world.get<noi_engine::mesh_renderer>(e));
+        }
+        if (world.has<noi_engine::mesh_renderer_properties>(e))
+        {
+            world.add<noi_engine::mesh_renderer_properties>(ne, world.get<noi_engine::mesh_renderer_properties>(e));
+        }
+        if (world.has<noi_engine::script_component>(e))
+        {
+            world.add<noi_engine::script_component>(ne, world.get<noi_engine::script_component>(e));
+        }
+
+        noi_engine::name_component nc{};
+        nc.name = new_name;
+        world.add<noi_engine::name_component>(ne, nc);
+        return ne;
     }
 }

@@ -66,6 +66,15 @@ namespace noi_engine_editor_bridge_detail
                                                    const noi_engine_editor_bridge_property_value& value) -> bool;
         [[nodiscard]] auto add_component(uint32_t entity_id, uint32_t entity_generation,
                                           const std::string& component_type) -> bool;
+        [[nodiscard]] auto remove_component(uint32_t entity_id, uint32_t entity_generation,
+                                             const std::string& component_type) -> bool;
+        [[nodiscard]] auto remove_component_property(uint32_t entity_id, uint32_t entity_generation,
+                                                       const std::string& component_type,
+                                                       const std::string& property_name) -> bool;
+        [[nodiscard]] auto create_entity(const std::string& name) -> noi_engine::entity;
+        [[nodiscard]] auto destroy_entity(uint32_t entity_id, uint32_t entity_generation) -> bool;
+        [[nodiscard]] auto duplicate_entity(uint32_t entity_id, uint32_t entity_generation,
+                                             const std::string& new_name) -> noi_engine::entity;
 
         // Resources & materials - bridge_game_resources.cpp
         auto enumerate_resources(noi_engine_editor_bridge_resource_entry_callback callback,
@@ -76,6 +85,8 @@ namespace noi_engine_editor_bridge_detail
         [[nodiscard]] auto set_material_property(uint32_t material_id, uint32_t material_generation,
                                                   const std::string& property_name,
                                                   const noi_engine_editor_bridge_property_value& value) -> bool;
+        [[nodiscard]] auto remove_material_property(uint32_t material_id, uint32_t material_generation,
+                                                      const std::string& property_name) -> bool;
 
     private:
         [[nodiscard]] auto get_world() -> noi_engine::world&;

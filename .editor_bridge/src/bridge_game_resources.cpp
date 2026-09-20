@@ -137,4 +137,39 @@ namespace noi_engine_editor_bridge_detail
 
         return false;
     }
+
+    auto bridge_game::remove_material_property(const uint32_t material_id, const uint32_t material_generation,
+                                                 const std::string& property_name) -> bool
+    {
+        const noi_engine::resource_handle<noi_engine::material> handle{material_id, material_generation};
+        auto& resources_ref = this->resources();
+
+        if (!resources_ref.materials.valid(handle))
+        {
+            return false;
+        }
+
+        auto* mat = resources_ref.materials.get(handle);
+
+        if (property_name.rfind("param:", 0) == 0)
+        {
+            if (!mat->get_parameters().contains(property_name.substr(6))) return false;
+            mat->remove_parameter(property_name.substr(6));
+            return true;
+        }
+        if (property_name.rfind("color:", 0) == 0)
+        {
+            if (!mat->get_colors().contains(property_name.substr(6))) return false;
+            mat->remove_color(property_name.substr(6));
+            return true;
+        }
+        if (property_name.rfind("texture:", 0) == 0)
+        {
+            if (!mat->get_textures().contains(property_name.substr(8))) return false;
+            mat->remove_texture(property_name.substr(8));
+            return true;
+        }
+
+        return false;
+    }
 }

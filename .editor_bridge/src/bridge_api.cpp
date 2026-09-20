@@ -144,3 +144,57 @@ void noi_engine_editor_bridge_set_grid_visible(const noi_engine_editor_bridge_ga
 {
     reinterpret_cast<bridge_game*>(handle)->set_grid_visible(visible != 0);
 }
+
+noi_engine_editor_bridge_entity_ref noi_engine_editor_bridge_create_entity(
+    const noi_engine_editor_bridge_game_handle handle, const char* name_utf8)
+{
+    const auto e = reinterpret_cast<bridge_game*>(handle)->create_entity(name_utf8 ? name_utf8 : "");
+    return {e.m_id, e.m_generation};
+}
+
+int noi_engine_editor_bridge_destroy_entity(const noi_engine_editor_bridge_game_handle handle,
+                                             const uint32_t entity_id, const uint32_t entity_generation)
+{
+    return reinterpret_cast<bridge_game*>(handle)->destroy_entity(entity_id, entity_generation) ? 1 : 0;
+}
+
+noi_engine_editor_bridge_entity_ref noi_engine_editor_bridge_duplicate_entity(
+    const noi_engine_editor_bridge_game_handle handle, const uint32_t entity_id, const uint32_t entity_generation,
+    const char* new_name_utf8)
+{
+    const auto e = reinterpret_cast<bridge_game*>(handle)->duplicate_entity(
+        entity_id, entity_generation, new_name_utf8 ? new_name_utf8 : "");
+    return {e.m_id, e.m_generation};
+}
+
+int noi_engine_editor_bridge_remove_component(const noi_engine_editor_bridge_game_handle handle,
+                                               const uint32_t entity_id, const uint32_t entity_generation,
+                                               const char* component_type_utf8)
+{
+    return reinterpret_cast<bridge_game*>(handle)->remove_component(
+               entity_id, entity_generation, component_type_utf8 ? component_type_utf8 : "")
+               ? 1
+               : 0;
+}
+
+int noi_engine_editor_bridge_remove_component_property(const noi_engine_editor_bridge_game_handle handle,
+                                                         const uint32_t entity_id, const uint32_t entity_generation,
+                                                         const char* component_type_utf8,
+                                                         const char* property_name_utf8)
+{
+    return reinterpret_cast<bridge_game*>(handle)->remove_component_property(
+               entity_id, entity_generation, component_type_utf8 ? component_type_utf8 : "",
+               property_name_utf8 ? property_name_utf8 : "")
+               ? 1
+               : 0;
+}
+
+int noi_engine_editor_bridge_remove_material_property(const noi_engine_editor_bridge_game_handle handle,
+                                                        const uint32_t material_id, const uint32_t material_generation,
+                                                        const char* property_name_utf8)
+{
+    return reinterpret_cast<bridge_game*>(handle)->remove_material_property(
+               material_id, material_generation, property_name_utf8 ? property_name_utf8 : "")
+               ? 1
+               : 0;
+}
