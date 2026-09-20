@@ -168,6 +168,13 @@ void noi_engine_editor_bridge_release_all_keys(noi_engine_editor_bridge_game_han
  */
 void noi_engine_editor_bridge_reset_timer(noi_engine_editor_bridge_game_handle handle);
 
+/*
+ * Shows/hides the editor-only reference grid added by set_scene_2d() (fixed in world space,
+ * not attached to the camera, purely a visual aid for confirming camera movement in the
+ * preview). No-op if no scene is loaded yet.
+ */
+void noi_engine_editor_bridge_set_grid_visible(noi_engine_editor_bridge_game_handle handle, int visible);
+
 #ifdef __cplusplus
 }
 #endif

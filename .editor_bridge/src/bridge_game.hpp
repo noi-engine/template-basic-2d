@@ -46,6 +46,10 @@ namespace noi_engine_editor_bridge_detail
         auto set_scene_2d(const std::string& path) -> void;
         auto load_scripts(const std::string& scripts_library_path) -> bool;
 
+        // Editor-only reference grid (fixed in world space, not attached to the camera) - a
+        // visual aid so panning/following the camera visibly scrolls something underneath.
+        auto set_grid_visible(bool visible) -> void;
+
         // Entities & components - bridge_game_entities.cpp
         auto enumerate_entities(noi_engine_editor_bridge_entity_entry_callback callback, void* user_data) -> void;
         auto enumerate_component_properties(uint32_t entity_id, uint32_t entity_generation,
@@ -81,5 +85,11 @@ namespace noi_engine_editor_bridge_detail
         noi_engine::timer m_timer{};
         void* m_scripts_library_handle{nullptr};
         std::unordered_set<int> m_held_keys{};
+
+        noi_engine::entity m_grid_entity{};
+        bool m_has_grid_entity{false};
+        noi_engine::resource_handle<noi_engine::mesh> m_grid_mesh{};
+        noi_engine::resource_handle<noi_engine::material> m_grid_material{};
+        bool m_grid_visible{false};
     };
 }

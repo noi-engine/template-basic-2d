@@ -128,6 +128,70 @@ namespace noi_engine_editor_bridge_detail
         transform.scale = glm::vec3{world_width, world_height, 1.0};
 
         world.add<noi_engine::dirty<noi_engine::transform>>(camera_entity, noi_engine::dirty<noi_engine::transform>{});
+
+        // Editor-only reference grid: fixed in world space (its own entity, not attached to
+        // the camera) so panning/following the camera visibly scrolls it underneath - without
+        // it, a blank scene gives no visual feedback that the camera ever moved. Off by default
+        // (see m_grid_visible) - toggled from the editor's viewport toolbar.
+        constexpr float GRID_QUAD_SIZE = 200.0f; // world units - comfortably larger than any
+                                                  // "enlarge world" zoom level the editor allows.
+        constexpr float GRID_CELL_SIZE = 1.0f;
+        constexpr float GRID_LINE_THICKNESS = 0.006f;
+
+        const auto grid_shader_handle = resources_ref.load_from_path<noi_engine::shader>(
+            "world_grid_shader", "shaders/world_grid_shader/index.shader");
+
+        auto grid_material = std::make_unique<noi_engine::material>();
+        grid_material->set_color("u_line_color", glm::vec4{1, 1, 1, 0.2f});
+        grid_material->set_parameter("u_cell_size", GRID_CELL_SIZE);
+        grid_material->set_parameter("u_line_thickness", GRID_LINE_THICKNESS);
+        grid_material->set_parameter("u_quad_size", GRID_QUAD_SIZE);
+        grid_material->set_shader(grid_shader_handle);
+        const auto grid_material_handle = resources_ref.load_instance(std::move(grid_material));
+
+        const auto grid_entity = world.create_entity();
+        world.add_transform(grid_entity, noi_engine::transform{
+                                 .scale = glm::vec3{GRID_QUAD_SIZE, GRID_QUAD_SIZE, 1.0f}
+                             });
+        world.add<noi_engine::render_layer>(grid_entity, {.order = -10});
+
+        m_grid_entity = grid_entity;
+        m_has_grid_entity = true;
+        m_grid_mesh = mesh_handle;
+        m_grid_material = grid_material_handle;
+
+        if (m_grid_visible)
+        {
+            world.add<noi_engine::mesh_renderer>(grid_entity, {
+                                                      .m_mesh = mesh_handle,
+                                                      .m_material = grid_material_handle
+                                                  });
+        }
+    }
+
+    auto bridge_game::set_grid_visible(const bool visible) -> void
+    {
+        m_grid_visible = visible;
+
+        if (!this->get_current_scene() || !m_has_grid_entity)
+        {
+            return;
+        }
+
+        auto& world = this->get_world();
+        const bool has_renderer = world.has<noi_engine::mesh_renderer>(m_grid_entity);
+
+        if (visible && !has_renderer)
+        {
+            world.add<noi_engine::mesh_renderer>(m_grid_entity, {
+                                                      .m_mesh = m_grid_mesh,
+                                                      .m_material = m_grid_material
+                                                  });
+        }
+        else if (!visible && has_renderer)
+        {
+            world.remove<noi_engine::mesh_renderer>(m_grid_entity);
+        }
     }
 
     auto bridge_game::load_scripts(const std::string& scripts_library_path) -> bool

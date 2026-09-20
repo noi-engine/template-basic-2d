@@ -134,3 +134,8 @@ void noi_engine_editor_bridge_reset_timer(const noi_engine_editor_bridge_game_ha
 {
     reinterpret_cast<bridge_game*>(handle)->reset_timer();
 }
+
+void noi_engine_editor_bridge_set_grid_visible(const noi_engine_editor_bridge_game_handle handle, const int visible)
+{
+    reinterpret_cast<bridge_game*>(handle)->set_grid_visible(visible != 0);
+}
