@@ -50,6 +50,10 @@ namespace noi_engine_editor_bridge_detail
         // visual aid so panning/following the camera visibly scrolls something underneath.
         auto set_grid_visible(bool visible) -> void;
 
+        // Writes the live world back to disk as source-loader-compatible scene JSON -
+        // bridge_game_persistence.cpp.
+        [[nodiscard]] auto save_scene(const std::string& target_path) -> bool;
+
         // Entities & components - bridge_game_entities.cpp
         auto enumerate_entities(noi_engine_editor_bridge_entity_entry_callback callback, void* user_data) -> void;
         auto enumerate_component_properties(uint32_t entity_id, uint32_t entity_generation,

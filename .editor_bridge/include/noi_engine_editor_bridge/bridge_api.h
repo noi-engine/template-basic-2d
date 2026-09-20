@@ -175,6 +175,14 @@ void noi_engine_editor_bridge_reset_timer(noi_engine_editor_bridge_game_handle h
  */
 void noi_engine_editor_bridge_set_grid_visible(noi_engine_editor_bridge_game_handle handle, int visible);
 
+/*
+ * Writes the current live world back to target_path_utf8 as scene JSON compatible with
+ * source_resource_loader's format (i.e. re-loadable via set_scene_2d()). Returns non-zero on
+ * success. No-op (returns 0) if no scene is loaded. The bridge does its own file I/O here -
+ * no JSON crosses the ABI boundary.
+ */
+int noi_engine_editor_bridge_save_scene(noi_engine_editor_bridge_game_handle handle, const char* target_path_utf8);
+
 #ifdef __cplusplus
 }
 #endif

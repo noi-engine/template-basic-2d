@@ -135,6 +135,11 @@ void noi_engine_editor_bridge_reset_timer(const noi_engine_editor_bridge_game_ha
     reinterpret_cast<bridge_game*>(handle)->reset_timer();
 }
 
+int noi_engine_editor_bridge_save_scene(const noi_engine_editor_bridge_game_handle handle, const char* target_path_utf8)
+{
+    return reinterpret_cast<bridge_game*>(handle)->save_scene(target_path_utf8 ? target_path_utf8 : "") ? 1 : 0;
+}
+
 void noi_engine_editor_bridge_set_grid_visible(const noi_engine_editor_bridge_game_handle handle, const int visible)
 {
     reinterpret_cast<bridge_game*>(handle)->set_grid_visible(visible != 0);
