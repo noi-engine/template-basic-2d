@@ -9,6 +9,7 @@
 
 #include <glm/glm.hpp>
 
+#include <noi_engine/builtin/systems/physics_system.hpp>
 #include <noi_engine/core/renderer/renderer.hpp>
 #include <noi_engine/core/resources/resource_loader.hpp>
 
@@ -96,6 +97,7 @@ namespace noi_engine_editor_bridge_detail
     auto bridge_game::set_scene_2d(const std::string& path) -> void
     {
         this->set_scene(path);
+        this->get_current_scene()->add_system<noi_engine::physics_system>();
         auto& resources_ref = this->resources();
 
         const float world_width = static_cast<float>(this->m_game_width) / PIXELS_PER_UNIT;

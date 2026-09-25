@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <functional>
 #include <memory>
+#include <noi_engine/builtin/systems/physics_system.hpp>
 #include <noi_engine/core/sdl/sdl_game.hpp>
 #include <string>
 
@@ -19,6 +20,7 @@ auto main(const int argc, char** argv) -> int
 	register_scripts(game);
 
 	auto main_scene = game.resources().load_scene(game_config::start_scene);
+	main_scene->add_system<noi_engine::physics_system>();
 	game.set_scene(std::move(main_scene));
 
 	return game.run(argc, argv);
