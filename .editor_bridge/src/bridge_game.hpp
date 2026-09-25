@@ -6,13 +6,15 @@
 #include <string>
 #include <unordered_set>
 
+#include <noi_engine/builtin/components/box_collider.hpp>
+#include <noi_engine/builtin/components/gravity.hpp>
+#include <noi_engine/builtin/components/orbit_camera.hpp>
 #include <noi_engine/core/components/camera_2d.hpp>
 #include <noi_engine/core/components/camera_3d.hpp>
 #include <noi_engine/core/components/dirty.hpp>
 #include <noi_engine/core/components/mesh_renderer.hpp>
 #include <noi_engine/core/components/mesh_renderer_properties.hpp>
 #include <noi_engine/core/components/name_component.hpp>
-#include <noi_engine/core/components/orbit_camera.hpp>
 #include <noi_engine/core/components/render_layer.hpp>
 #include <noi_engine/core/components/script_component.hpp>
 #include <noi_engine/core/components/transform.hpp>

@@ -45,8 +45,10 @@ namespace noi_engine_editor_bridge_detail
                 component_types += type_name;
             };
 
+            append_type("box_collider", world.has<noi_engine::box_collider>(e));
             append_type("camera_2d", world.has<noi_engine::camera_2d>(e));
             append_type("camera_3d", world.has<noi_engine::camera_3d>(e));
+            append_type("gravity", world.has<noi_engine::gravity>(e));
             append_type("mesh_renderer", world.has<noi_engine::mesh_renderer>(e));
             append_type("mesh_renderer_properties", world.has<noi_engine::mesh_renderer_properties>(e));
             append_type("name_component", world.has<noi_engine::name_component>(e));
@@ -220,6 +222,20 @@ namespace noi_engine_editor_bridge_detail
             }
             emit_bool("created", sc.created, true);
         }
+        else if (component_type == "gravity" && world.has<noi_engine::gravity>(e))
+        {
+            const auto& g = world.get<noi_engine::gravity>(e);
+            emit_float("acceleration_x", g.acceleration.x, false);
+            emit_float("acceleration_y", g.acceleration.y, false);
+            emit_bool("enabled", g.enabled, false);
+        }
+        else if (component_type == "box_collider" && world.has<noi_engine::box_collider>(e))
+        {
+            const auto& bc = world.get<noi_engine::box_collider>(e);
+            emit_float("half_width", bc.half_extents.x, false);
+            emit_float("half_height", bc.half_extents.y, false);
+            emit_bool("is_static", bc.is_static, false);
+        }
         // world_matrix intentionally exposes no editable properties (fully computed each frame).
     }
 
@@ -382,6 +398,44 @@ namespace noi_engine_editor_bridge_detail
             return false;
         }
 
+        if (component_type == "gravity" && world.has<noi_engine::gravity>(e))
+        {
+            auto& g = world.get<noi_engine::gravity>(e);
+
+            if (property_name == "enabled" && value.type == NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_BOOL)
+            {
+                g.enabled = value.flag != 0;
+                return true;
+            }
+            if (value.type != NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_FLOAT)
+            {
+                return false;
+            }
+            if (property_name == "acceleration_x") { g.acceleration.x = value.number[0]; }
+            else if (property_name == "acceleration_y") { g.acceleration.y = value.number[0]; }
+            else { return false; }
+            return true;
+        }
+
+        if (component_type == "box_collider" && world.has<noi_engine::box_collider>(e))
+        {
+            auto& bc = world.get<noi_engine::box_collider>(e);
+
+            if (property_name == "is_static" && value.type == NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_BOOL)
+            {
+                bc.is_static = value.flag != 0;
+                return true;
+            }
+            if (value.type != NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_FLOAT)
+            {
+                return false;
+            }
+            if (property_name == "half_width") { bc.half_extents.x = value.number[0]; }
+            else if (property_name == "half_height") { bc.half_extents.y = value.number[0]; }
+            else { return false; }
+            return true;
+        }
+
         // world_matrix exposes no editable properties (fully computed each frame).
         return false;
     }
@@ -400,7 +454,7 @@ namespace noi_engine_editor_bridge_detail
         if (component_type == "transform")
         {
             if (world.has<noi_engine::transform>(e)) return false;
-            world.add<noi_engine::transform>(e, {});
+            world.add_transform(e, {});
             return true;
         }
         if (component_type == "camera_2d")
@@ -460,6 +514,18 @@ namespace noi_engine_editor_bridge_detail
             world.add<noi_engine::script_component>(e, {});
             return true;
         }
+        if (component_type == "gravity")
+        {
+            if (world.has<noi_engine::gravity>(e)) return false;
+            world.add<noi_engine::gravity>(e, {});
+            return true;
+        }
+        if (component_type == "box_collider")
+        {
+            if (world.has<noi_engine::box_collider>(e)) return false;
+            world.add<noi_engine::box_collider>(e, {});
+            return true;
+        }
 
         // world_matrix is engine-managed (recomputed from transform each frame) and is
         // intentionally not addable by hand.
@@ -515,6 +581,16 @@ namespace noi_engine_editor_bridge_detail
         if (component_type == "script_component" && world.has<noi_engine::script_component>(e))
         {
             world.remove<noi_engine::script_component>(e);
+            return true;
+        }
+        if (component_type == "gravity" && world.has<noi_engine::gravity>(e))
+        {
+            world.remove<noi_engine::gravity>(e);
+            return true;
+        }
+        if (component_type == "box_collider" && world.has<noi_engine::box_collider>(e))
+        {
+            world.remove<noi_engine::box_collider>(e);
             return true;
         }
 
@@ -654,6 +730,14 @@ namespace noi_engine_editor_bridge_detail
         if (world.has<noi_engine::script_component>(e))
         {
             world.add<noi_engine::script_component>(ne, world.get<noi_engine::script_component>(e));
+        }
+        if (world.has<noi_engine::gravity>(e))
+        {
+            world.add<noi_engine::gravity>(ne, world.get<noi_engine::gravity>(e));
+        }
+        if (world.has<noi_engine::box_collider>(e))
+        {
+            world.add<noi_engine::box_collider>(ne, world.get<noi_engine::box_collider>(e));
         }
 
         noi_engine::name_component nc{};
