@@ -4,6 +4,12 @@
     "scripts": [
       "player_script",
       "camera_script"
+    ],
+    "textures": [
+      {
+        "name": "generic_sprite",
+        "path": "textures/generic_sprite.png"
+      }
     ]
   },
   "entities": [
@@ -23,12 +29,12 @@
           "type": "mesh_renderer",
           "properties": {
             "mesh": "meshes:quad_2d",
-            "material": "materials:color",
+            "material": "materials:texture",
             "material_properties": {
-              "colors": [
+              "textures": [
                 {
-                  "name": "u_color",
-                  "value": "#0000ffff"
+                  "name": "u_texture",
+                  "value": "generic_sprite"
                 }
               ]
             }
