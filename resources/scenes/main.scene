@@ -9,10 +9,55 @@
       {
         "name": "generic_sprite",
         "path": "textures/generic_sprite.png"
+      },
+      {
+        "name": "ground_texture",
+        "path": "textures/ground_texture.png"
+      },
+      {
+        "name": "wall_texture",
+        "path": "textures/wall_texture.png"
+      },
+      {
+        "name": "platform_texture",
+        "path": "textures/platform_texture.png"
       }
     ]
   },
   "entities": [
+    {
+      "name": "sky",
+      "components": [
+        {
+          "type": "transform",
+          "properties": {
+            "position": [0, 5, 0],
+            "scale": [60, 40, 1]
+          }
+        },
+        {
+          "type": "render_layer",
+          "properties": {
+            "order": -2
+          }
+        },
+        {
+          "type": "mesh_renderer",
+          "properties": {
+            "mesh": "meshes:quad_2d",
+            "material": "materials:color",
+            "material_properties": {
+              "colors": [
+                {
+                  "name": "u_color",
+                  "value": "#87ceebff"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
     {
       "name": "player",
       "components": [
@@ -46,6 +91,246 @@
             "names": [
               "player_script"
             ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "ground",
+      "components": [
+        {
+          "type": "transform",
+          "properties": {
+            "position": [0, -3, 0],
+            "scale": [16, 1, 1]
+          }
+        },
+        {
+          "type": "render_layer",
+          "properties": {
+            "order": -1
+          }
+        },
+        {
+          "type": "mesh_renderer",
+          "properties": {
+            "mesh": "meshes:quad_2d",
+            "material": "materials:texture",
+            "material_properties": {
+              "textures": [
+                {
+                  "name": "u_texture",
+                  "value": "ground_texture"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "box_collider",
+          "properties": {
+            "half_extents": [8, 0.5],
+            "is_static": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "wall_left",
+      "components": [
+        {
+          "type": "transform",
+          "properties": {
+            "position": [-8, 2.5, 0],
+            "scale": [1, 10, 1]
+          }
+        },
+        {
+          "type": "render_layer",
+          "properties": {
+            "order": -1
+          }
+        },
+        {
+          "type": "mesh_renderer",
+          "properties": {
+            "mesh": "meshes:quad_2d",
+            "material": "materials:texture",
+            "material_properties": {
+              "textures": [
+                {
+                  "name": "u_texture",
+                  "value": "wall_texture"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "box_collider",
+          "properties": {
+            "half_extents": [0.5, 5],
+            "is_static": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "wall_right",
+      "components": [
+        {
+          "type": "transform",
+          "properties": {
+            "position": [8, 2.5, 0],
+            "scale": [1, 10, 1]
+          }
+        },
+        {
+          "type": "render_layer",
+          "properties": {
+            "order": -1
+          }
+        },
+        {
+          "type": "mesh_renderer",
+          "properties": {
+            "mesh": "meshes:quad_2d",
+            "material": "materials:texture",
+            "material_properties": {
+              "textures": [
+                {
+                  "name": "u_texture",
+                  "value": "wall_texture"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "box_collider",
+          "properties": {
+            "half_extents": [0.5, 5],
+            "is_static": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "platform_1",
+      "components": [
+        {
+          "type": "transform",
+          "properties": {
+            "position": [-4, -1.75, 0],
+            "scale": [3, 0.5, 1]
+          }
+        },
+        {
+          "type": "render_layer",
+          "properties": {
+            "order": -1
+          }
+        },
+        {
+          "type": "mesh_renderer",
+          "properties": {
+            "mesh": "meshes:quad_2d",
+            "material": "materials:texture",
+            "material_properties": {
+              "textures": [
+                {
+                  "name": "u_texture",
+                  "value": "platform_texture"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "box_collider",
+          "properties": {
+            "half_extents": [1.5, 0.25],
+            "is_static": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "platform_2",
+      "components": [
+        {
+          "type": "transform",
+          "properties": {
+            "position": [0.5, -1.35, 0],
+            "scale": [2.5, 0.5, 1]
+          }
+        },
+        {
+          "type": "render_layer",
+          "properties": {
+            "order": -1
+          }
+        },
+        {
+          "type": "mesh_renderer",
+          "properties": {
+            "mesh": "meshes:quad_2d",
+            "material": "materials:texture",
+            "material_properties": {
+              "textures": [
+                {
+                  "name": "u_texture",
+                  "value": "platform_texture"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "box_collider",
+          "properties": {
+            "half_extents": [1.25, 0.25],
+            "is_static": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "platform_3",
+      "components": [
+        {
+          "type": "transform",
+          "properties": {
+            "position": [4.5, -1.75, 0],
+            "scale": [3, 0.5, 1]
+          }
+        },
+        {
+          "type": "render_layer",
+          "properties": {
+            "order": -1
+          }
+        },
+        {
+          "type": "mesh_renderer",
+          "properties": {
+            "mesh": "meshes:quad_2d",
+            "material": "materials:texture",
+            "material_properties": {
+              "textures": [
+                {
+                  "name": "u_texture",
+                  "value": "platform_texture"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "box_collider",
+          "properties": {
+            "half_extents": [1.5, 0.25],
+            "is_static": true
           }
         }
       ]
