@@ -1,6 +1,7 @@
 {
   "copy_excludes": [
     ".git",
+    ".github",
     ".noi_engine",
     ".vscode",
     ".idea",
@@ -10,6 +11,7 @@
   ],
   "parse_excludes": [
     ".git",
+    ".github",
     ".noi_engine",
     ".vscode",
     ".idea",
