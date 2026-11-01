@@ -7,7 +7,7 @@
   "scripts_library": "build/debug/bin/libs/libgame_scripts.so",
   "editor_bridge_version": "{{EDITOR_BRIDGE_VERSION}}",
   "window": {
-    "width": 900,
-    "height": 700
+    "width": 1600,
+    "height": 900
   }
 }
