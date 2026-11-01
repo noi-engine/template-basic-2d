@@ -1,4 +1,5 @@
 #include "bridge_game.hpp"
+#include "property_emitter.hpp"
 
 #include <glm/glm.hpp>
 
@@ -49,51 +50,23 @@ namespace noi_engine_editor_bridge_detail
 
         auto* mat = resources_ref.materials.get(handle);
 
-        const auto emit_float = [&](const char* name, const float v, const bool read_only)
-        {
-            noi_engine_editor_bridge_property_value pv{};
-            pv.type = NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_FLOAT;
-            pv.number[0] = v;
-            callback(user_data, name, pv, read_only ? 1 : 0);
-        };
-
-        const auto emit_vec4 = [&](const char* name, const glm::vec4& v, const bool read_only)
-        {
-            noi_engine_editor_bridge_property_value pv{};
-            pv.type = NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_VEC4;
-            pv.number[0] = v.x;
-            pv.number[1] = v.y;
-            pv.number[2] = v.z;
-            pv.number[3] = v.w;
-            callback(user_data, name, pv, read_only ? 1 : 0);
-        };
-
-        const auto emit_resource_ref = [&](const char* name, const std::string& label,
-                                            const noi_engine_editor_bridge_resource_type resource_type,
-                                            const bool read_only)
-        {
-            noi_engine_editor_bridge_property_value pv{};
-            pv.type = NOI_ENGINE_EDITOR_BRIDGE_PROPERTY_RESOURCE_REF;
-            pv.text = label.c_str();
-            pv.resource_type = resource_type;
-            callback(user_data, name, pv, read_only ? 1 : 0);
-        };
+        const property_emitter emitter{callback, user_data};
 
         const std::string shader_label{resources_ref.get_label<noi_engine::shader>(mat->shader())};
-        emit_resource_ref("shader", shader_label, NOI_ENGINE_EDITOR_BRIDGE_RESOURCE_SHADER, false);
+        emitter.emit_resource_ref("shader", shader_label, NOI_ENGINE_EDITOR_BRIDGE_RESOURCE_SHADER, false);
 
         for (const auto& [key, v] : mat->get_parameters())
         {
-            emit_float(("param:" + key).c_str(), v, false);
+            emitter.emit_float(("param:" + key).c_str(), v, false);
         }
         for (const auto& [key, v] : mat->get_colors())
         {
-            emit_vec4(("color:" + key).c_str(), v, false);
+            emitter.emit_vec4(("color:" + key).c_str(), v, false);
         }
         for (const auto& [key, texture_handle] : mat->get_textures())
         {
             const std::string label{resources_ref.get_label<noi_engine::texture>(texture_handle)};
-            emit_resource_ref(("texture:" + key).c_str(), label, NOI_ENGINE_EDITOR_BRIDGE_RESOURCE_TEXTURE, false);
+            emitter.emit_resource_ref(("texture:" + key).c_str(), label, NOI_ENGINE_EDITOR_BRIDGE_RESOURCE_TEXTURE, false);
         }
     }
 

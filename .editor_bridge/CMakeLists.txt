@@ -3,6 +3,7 @@ find_package(glm CONFIG REQUIRED)
 add_library(noi_engine_editor_bridge SHARED
         include/noi_engine_editor_bridge/bridge_api.h
         src/bridge_game.hpp
+        src/property_emitter.hpp
         src/bridge_game.cpp
         src/bridge_game_entities.cpp
         src/bridge_game_resources.cpp
