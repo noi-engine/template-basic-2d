@@ -16,8 +16,11 @@ namespace noi_engine_editor_bridge_detail
 {
     namespace
     {
-        // Order components are written in. Types without a `save` function aren't persisted.
-        constexpr std::array SAVE_ORDER{"transform", "camera_2d", "render_layer", "mesh_renderer", "script_component"};
+        // Order components are written in. Types without a `save` function aren't persisted
+        // (gravity, for instance, has no scene format: scripts add it at runtime).
+        constexpr std::array SAVE_ORDER{
+            "transform", "camera_2d", "render_layer", "mesh_renderer", "script_component", "box_collider",
+        };
 
         // The engine doesn't keep a resource's load path once loaded (only its label), so the
         // scene's "name" and "resources" blocks are carried over from the file on disk.

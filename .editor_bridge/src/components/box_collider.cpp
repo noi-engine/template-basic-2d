@@ -1,5 +1,6 @@
 #include "component_handler.hpp"
 
+#include <nlohmann/json.hpp>
 #include <noi_engine/builtin/components/box_collider.hpp>
 
 namespace noi_engine_editor_bridge_detail
@@ -36,6 +37,15 @@ namespace noi_engine_editor_bridge_detail
             else { return false; }
             return true;
         }
+
+        auto save(const component_context& c, bool, nlohmann::json& components) -> void
+        {
+            const auto& bc = c.world.get<box_collider>(c.entity);
+            nlohmann::json props;
+            props["half_extents"] = nlohmann::json::array({bc.half_extents.x, bc.half_extents.y});
+            props["is_static"] = bc.is_static;
+            components.push_back({{"type", "box_collider"}, {"properties", props}});
+        }
     }
 
     auto make_box_collider_handler() -> component_handler
@@ -48,6 +58,7 @@ namespace noi_engine_editor_bridge_detail
             .add = component_ops::add<box_collider>,
             .remove = component_ops::remove<box_collider>,
             .copy = component_ops::copy<box_collider>,
+            .save = save,
         };
     }
 }
