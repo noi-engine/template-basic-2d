@@ -53,6 +53,12 @@
       "name": "ENGINE_VERSION",
       "type": "TEXT",
       "validators": []
+    },
+    {
+      "label": "EDITOR_BRIDGE_VERSION",
+      "name": "EDITOR_BRIDGE_VERSION",
+      "type": "TEXT",
+      "validators": []
     }
   ]
 }

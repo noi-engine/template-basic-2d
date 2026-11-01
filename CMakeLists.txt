@@ -61,8 +61,6 @@ set_target_properties(noi_engine_game PROPERTIES
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_copy_directory_dependency(noi_engine_game "resources" "${CMAKE_CURRENT_SOURCE_DIR}/resources" "${CMAKE_BINARY_DIR}/bin")
-
-    add_subdirectory(.editor_bridge)
 else()
     include(.resources_compiler/ResourcesCompiler.cmake)
 
