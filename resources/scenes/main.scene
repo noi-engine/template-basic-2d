@@ -349,6 +349,14 @@
           "type": "camera_2d"
         },
         {
+          "type": "culling",
+          "properties": {
+            "enabled": true,
+            "margin": 2.0,
+            "simulate_offscreen": true
+          }
+        },
+        {
           "type": "scripts",
           "properties": {
             "names": [
