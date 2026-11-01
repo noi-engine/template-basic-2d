@@ -31,7 +31,8 @@
 - **ECS core** with entities, components, systems and typed signals between scripts
 - **Scenes as data**: scenes are written in JSON and compiled to FlatBuffers for release builds (source and compiled loaders)
 - **OpenGL renderer** (SDL2 + glad): meshes, materials, shaders, textures, render layers, letterboxing, 2D and 3D cameras
-- **C++ scripts** that register themselves, with `on_create` / `on_update` hooks and helper macros
+- **C++ scripts** that register themselves (`NOI_ENGINE_SCRIPT`), with `on_create` / `on_update` hooks and helper macros
+- **`fill_screen`** backgrounds that always cover the window
 - **Built-in modules you can turn on**: `physics_system` (gravity + AABB `box_collider`), `orbit_camera_system`, follow action
 - **Resource manager** with handles, labels and listing, which the editor uses
 
@@ -46,7 +47,24 @@
 
 ### Template — [`template-basic-2d`](https://github.com/noi-engine/template-basic-2d)
 
-A small platformer to start from: a player with gravity, jumping and collisions, a camera that follows the player, platforms, walls and a ground, all set up in `resources/scenes/main.scene`.
+A small platformer to start from: a sky background, a player with gravity, jumping and collisions, a camera that follows the player, platforms, walls and a ground, all set up in `resources/scenes/main.scene`.
+
+Everything in it can be rebuilt from scratch in the editor:
+
+| In the scene | In the editor |
+| --- | --- |
+| `sky` (always fills the window) | Hierarchy **+** > *Background (fills the window)* |
+| `ground`, `wall_left`, `wall_right`, `platform_*` | Hierarchy **+** > *Static Platform*; its collider follows its size; texture in the Sprite section; folders through *Move to folder* |
+| `player` | *Sprite* with an image, then Inspector **Add Component** > *Script* > attach `player_script` |
+| `main_camera` + `camera_script`, culling | select `main_camera`, **Add Component** > *Script* / *Culling* |
+| A new script | Scripts section > **New script...**: creates `sources/scripts/<name>_script.hpp/.cpp`, compiles and attaches it. Write its code, then **Compile** |
+
+### Scripts
+
+A script is a class in `sources/scripts` that registers itself with `NOI_ENGINE_SCRIPT(<name>)`. The scripts library
+compiles every file of `sources/scripts` (and `sources/signals`), so there is nothing to list or register by hand. In
+the editor, scripts only run in Play mode; after a **Compile** the editor reloads them (and the open scene, unsaved
+edits included).
 
 ## A taste of the API
 
@@ -74,7 +92,7 @@ auto noi_engine_game::player_script::on_update(
 auto main(const int argc, char** argv) -> int
 {
     noi_engine::sdl_game game(name, width, height, get_resource_loader());
-    register_scripts(game);
+    register_scripts(game); // optional custom registrations: scripts register themselves
 
     auto scene = game.resources().load_scene("scenes/main.scene");
     scene->add_system<noi_engine::physics_system>();

@@ -13,5 +13,8 @@ namespace noi_engine_game
 			-> void override;
 
 		explicit camera_script() = default;
+
+		// Registers the script under the name "camera_script" (the name scenes use).
+		NOI_ENGINE_SCRIPT(camera_script);
 	};
-}  // namespace sandbox::basic
+}  // namespace noi_engine_game

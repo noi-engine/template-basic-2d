@@ -12,14 +12,12 @@ include(cmake/copy_directory.cmake)
 set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
-set(NOI_ENGINE_GAME_SCRIPTS_SOURCES
-        sources/signals/moved_signal.hpp
-        sources/scripts/camera_script.hpp
-        sources/scripts/camera_script.cpp
-        sources/scripts/player_script.hpp
-        sources/scripts/player_script.cpp
-        sources/scripts/scripts_register.hpp
-        sources/scripts/scripts_register.cpp
+# Every file under sources/scripts and sources/signals is part of the scripts library: a new
+# script (e.g. one the editor's "New script" creates) only needs to be compiled, nothing to list.
+file(GLOB_RECURSE NOI_ENGINE_GAME_SCRIPTS_SOURCES CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/sources/scripts/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/sources/scripts/*.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/sources/signals/*.hpp"
 )
 
 add_library(game_scripts SHARED ${NOI_ENGINE_GAME_SCRIPTS_SOURCES})

@@ -23,4 +23,5 @@ CMakeUserPresets.json
 libs
 .noi_engine
 .resources_compiler
-ù*.scene.play
+*.scene.play
+*.scene.reload

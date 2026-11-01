@@ -28,6 +28,7 @@
     {
       "name": "sky",
       "folder": "Level",
+      "groups": ["sprite"],
       "components": [
         {
           "type": "transform",
@@ -39,7 +40,7 @@
         {
           "type": "render_layer",
           "properties": {
-            "order": -2
+            "order": -100
           }
         },
         {
@@ -56,11 +57,15 @@
               ]
             }
           }
+        },
+        {
+          "type": "fill_screen"
         }
       ]
     },
     {
       "name": "player",
+      "groups": ["sprite"],
       "components": [
         {
           "type": "transform"
@@ -99,6 +104,7 @@
     {
       "name": "ground",
       "folder": "Level",
+      "groups": ["sprite"],
       "components": [
         {
           "type": "transform",
@@ -140,6 +146,7 @@
     {
       "name": "wall_left",
       "folder": "Level",
+      "groups": ["sprite"],
       "components": [
         {
           "type": "transform",
@@ -181,6 +188,7 @@
     {
       "name": "wall_right",
       "folder": "Level",
+      "groups": ["sprite"],
       "components": [
         {
           "type": "transform",
@@ -222,6 +230,7 @@
     {
       "name": "platform_1",
       "folder": "Level/Platforms",
+      "groups": ["sprite"],
       "components": [
         {
           "type": "transform",
@@ -263,6 +272,7 @@
     {
       "name": "platform_2",
       "folder": "Level/Platforms",
+      "groups": ["sprite"],
       "components": [
         {
           "type": "transform",
@@ -304,6 +314,7 @@
     {
       "name": "platform_3",
       "folder": "Level/Platforms",
+      "groups": ["sprite"],
       "components": [
         {
           "type": "transform",

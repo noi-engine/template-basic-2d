@@ -17,5 +17,8 @@ namespace noi_engine_game
 			-> void override;
 
 		explicit player_script() = default;
+
+		// Registers the script under the name "player_script" (the name scenes use).
+		NOI_ENGINE_SCRIPT(player_script);
 	};
 }
