@@ -1,24 +1,13 @@
 #pragma once
 
 #include "noi_engine_editor_bridge/bridge_api.h"
+#include "components/component_handler.hpp"
 
 #include <cstdint>
 #include <string>
 #include <unordered_set>
 
-#include <noi_engine/builtin/components/box_collider.hpp>
-#include <noi_engine/builtin/components/gravity.hpp>
-#include <noi_engine/builtin/components/orbit_camera.hpp>
 #include <noi_engine/core/components/camera_2d.hpp>
-#include <noi_engine/core/components/camera_3d.hpp>
-#include <noi_engine/core/components/dirty.hpp>
-#include <noi_engine/core/components/mesh_renderer.hpp>
-#include <noi_engine/core/components/mesh_renderer_properties.hpp>
-#include <noi_engine/core/components/name_component.hpp>
-#include <noi_engine/core/components/render_layer.hpp>
-#include <noi_engine/core/components/script_component.hpp>
-#include <noi_engine/core/components/transform.hpp>
-#include <noi_engine/core/components/world_matrix.hpp>
 #include <noi_engine/core/ecs/entity.hpp>
 #include <noi_engine/core/ecs/world.hpp>
 #include <noi_engine/core/game.hpp>
@@ -26,38 +15,42 @@
 
 namespace noi_engine_editor_bridge_detail
 {
-    // Concrete noi_engine::game backing every noi_engine_editor_bridge_game_handle. Implementation
-    // is split by responsibility:
-    //   - bridge_game.cpp:           lifecycle (construction, run(), resize, scene load) and input
-    //   - bridge_game_entities.cpp:  entity/component inspection & editing
-    //   - bridge_game_resources.cpp: resource/material inspection & editing
-    // bridge_api.cpp holds the extern "C" glue that exposes this class through bridge_api.h.
+    // Concrete noi_engine::game behind every noi_engine_editor_bridge_game_handle. bridge_api.cpp
+    // exposes it through the extern "C" API in bridge_api.h. Implementation files:
+    //   - bridge_game.cpp:             lifecycle, input, resize, scripts library
+    //   - bridge_game_overlay.cpp:     scene loading + editor-only camera border and grid
+    //   - bridge_game_entities.cpp:    entity listing, create/destroy/duplicate
+    //   - bridge_game_components.cpp:  component editing (one handler per type in components/)
+    //   - bridge_game_resources.cpp:   resource listing and material editing
+    //   - bridge_game_persistence.cpp: save the scene back to JSON
     class bridge_game final : public noi_engine::game
     {
     public:
         bridge_game(int game_width, int game_height, const std::string& resources_path);
         ~bridge_game() override;
 
-        // Lifecycle & input - bridge_game.cpp
+        // Lifecycle & input
         auto run() -> void;
         auto reset_timer() -> void;
         auto set_key_pressed(int key) -> void;
         auto set_key_released(int key) -> void;
         auto release_all_keys() -> void;
         auto on_resize(int width, int height) -> void;
-        auto set_scene_2d(const std::string& path) -> void;
         auto load_scripts(const std::string& scripts_library_path) -> bool;
 
-        // Editor-only reference grid (fixed in world space, not attached to the camera) - a
-        // visual aid so panning/following the camera visibly scrolls something underneath.
+        // Scene & editor overlay
+        auto set_scene_2d(const std::string& path) -> void;
         auto set_grid_visible(bool visible) -> void;
-
-        // Writes the live world back to disk as source-loader-compatible scene JSON -
-        // bridge_game_persistence.cpp.
         [[nodiscard]] auto save_scene(const std::string& target_path) -> bool;
 
-        // Entities & components - bridge_game_entities.cpp
+        // Entities
         auto enumerate_entities(noi_engine_editor_bridge_entity_entry_callback callback, void* user_data) -> void;
+        [[nodiscard]] auto create_entity(const std::string& name) -> noi_engine::entity;
+        [[nodiscard]] auto destroy_entity(uint32_t entity_id, uint32_t entity_generation) -> bool;
+        [[nodiscard]] auto duplicate_entity(uint32_t entity_id, uint32_t entity_generation,
+                                             const std::string& new_name) -> noi_engine::entity;
+
+        // Components
         auto enumerate_component_properties(uint32_t entity_id, uint32_t entity_generation,
                                              const std::string& component_type,
                                              noi_engine_editor_bridge_property_entry_callback callback,
@@ -66,19 +59,15 @@ namespace noi_engine_editor_bridge_detail
                                                    const std::string& component_type,
                                                    const std::string& property_name,
                                                    const noi_engine_editor_bridge_property_value& value) -> bool;
+        [[nodiscard]] auto remove_component_property(uint32_t entity_id, uint32_t entity_generation,
+                                                       const std::string& component_type,
+                                                       const std::string& property_name) -> bool;
         [[nodiscard]] auto add_component(uint32_t entity_id, uint32_t entity_generation,
                                           const std::string& component_type) -> bool;
         [[nodiscard]] auto remove_component(uint32_t entity_id, uint32_t entity_generation,
                                              const std::string& component_type) -> bool;
-        [[nodiscard]] auto remove_component_property(uint32_t entity_id, uint32_t entity_generation,
-                                                       const std::string& component_type,
-                                                       const std::string& property_name) -> bool;
-        [[nodiscard]] auto create_entity(const std::string& name) -> noi_engine::entity;
-        [[nodiscard]] auto destroy_entity(uint32_t entity_id, uint32_t entity_generation) -> bool;
-        [[nodiscard]] auto duplicate_entity(uint32_t entity_id, uint32_t entity_generation,
-                                             const std::string& new_name) -> noi_engine::entity;
 
-        // Resources & materials - bridge_game_resources.cpp
+        // Resources & materials
         auto enumerate_resources(noi_engine_editor_bridge_resource_entry_callback callback,
                                   void* user_data) const -> void;
         auto enumerate_material_properties(uint32_t material_id, uint32_t material_generation,
@@ -91,11 +80,19 @@ namespace noi_engine_editor_bridge_detail
                                                       const std::string& property_name) -> bool;
 
     private:
+        static constexpr float PIXELS_PER_UNIT = 100.0f;
+
         [[nodiscard]] auto get_world() -> noi_engine::world&;
         [[nodiscard]] auto get_current_scene() const -> noi_engine::scene*;
 
         //TODO: handle 3d
         [[nodiscard]] auto get_camera_2d_component() -> noi_engine::camera_2d&;
+
+        [[nodiscard]] auto component_context_for(uint32_t entity_id, uint32_t entity_generation) -> component_context;
+        [[nodiscard]] auto is_grid_entity(noi_engine::entity e) const -> bool;
+
+        auto add_camera_gizmo() -> void;
+        auto create_grid() -> void;
 
         int m_game_width{};
         int m_game_height{};

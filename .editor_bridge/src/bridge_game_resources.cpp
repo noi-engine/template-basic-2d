@@ -1,5 +1,5 @@
 #include "bridge_game.hpp"
-#include "property_emitter.hpp"
+#include "properties/property_emitter.hpp"
 
 #include <glm/glm.hpp>
 
