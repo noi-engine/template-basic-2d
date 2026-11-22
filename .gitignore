@@ -25,3 +25,4 @@ libs
 .resources_compiler
 *.scene.play
 *.scene.reload
+.*.scene.undo*
