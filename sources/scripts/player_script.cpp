@@ -35,9 +35,6 @@ namespace
     // Upward velocity applied on jump. Combined with gravity's default -9.81 accel this
     // gives a ~1.8 unit peak height and ~1.2s of airtime - tune here if the hop feels off.
     constexpr float JUMP_VELOCITY = 6.0f;
-    // physics_system zeroes gravity.velocity[axis] the instant a collision resolves it, so
-    // "resting on something" and "at rest" are the same signal - no separate ground flag needed.
-    constexpr float GROUNDED_EPSILON = 0.01f;
 }
 
 auto noi_engine_game::player_script::on_create(
@@ -75,8 +72,8 @@ auto noi_engine_game::player_script::on_update(
     }
 
     auto& g = NOI_ENGINE_GET(gravity);
-    const bool grounded = std::abs(g.velocity.y) < GROUNDED_EPSILON;
-    if (grounded && input->is_key_pressed(noi_engine::key_code::space))
+    // gravity::grounded is set by the physics system when the body stands on something solid.
+    if (g.grounded && input->is_key_pressed(noi_engine::key_code::space))
     {
         g.velocity.y = JUMP_VELOCITY;
     }

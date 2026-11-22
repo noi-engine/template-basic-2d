@@ -23,8 +23,14 @@ try
 
 	register_scripts(game);
 
+	// The systems a scene needs aren't part of the scene file: add them to every scene, the first
+	// one and the ones scripts switch to with NOI_ENGINE_LOAD_SCENE("scenes/other.scene").
+	const auto add_systems = [](noi_engine::scene& scene) -> void
+	{ scene.add_system<noi_engine::physics_system>(); };
+	game.on_scene_loaded(add_systems);
+
 	auto main_scene = game.resources().load_scene(game_config::start_scene);
-	main_scene->add_system<noi_engine::physics_system>();
+	add_systems(*main_scene);
 	game.set_scene(std::move(main_scene));
 
 	return game.run(argc, argv);
