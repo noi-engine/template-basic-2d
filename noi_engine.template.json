@@ -1,8 +1,8 @@
 {
-  "version": "0.0.1067",
+  "version": "0.0.1068",
   "noi_engine_version": "0.0.112",
   "resources_compiler_version": "0.0.107",
-  "editor_bridge_version": "0.0.9",
+  "editor_bridge_version": "0.0.10",
   "id": "template-basic-2d",
   "name": "2D Game Template",
   "description": "Basic 2D Game Template",
