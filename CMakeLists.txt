@@ -12,6 +12,14 @@ include(cmake/copy_directory.cmake)
 set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
+if(APPLE)
+    set(GAME_RPATH_ORIGIN "@loader_path")
+    set(GAME_RPATH_LIBS "@executable_path/libs")
+else()
+    set(GAME_RPATH_ORIGIN "$ORIGIN")
+    set(GAME_RPATH_LIBS "$ORIGIN/libs")
+endif()
+
 # Every file under sources/scripts and sources/signals is part of the scripts library: a new
 # script (e.g. one the editor's "New script" creates) only needs to be compiled, nothing to list.
 file(GLOB_RECURSE NOI_ENGINE_GAME_SCRIPTS_SOURCES CONFIGURE_DEPENDS
@@ -28,8 +36,8 @@ target_link_libraries(game_scripts PRIVATE noi_engine)
 
 set_target_properties(game_scripts PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/libs"
-    BUILD_RPATH "$ORIGIN"
-    INSTALL_RPATH "$ORIGIN"
+    BUILD_RPATH "${GAME_RPATH_ORIGIN}"
+    INSTALL_RPATH "${GAME_RPATH_ORIGIN}"
 )
 
 set(NOI_ENGINE_GAME_HEADERS)
@@ -53,8 +61,8 @@ target_link_libraries(noi_engine_game PRIVATE game_scripts)
 set_target_properties(noi_engine_game PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 set_target_properties(noi_engine_game PROPERTIES
-    BUILD_RPATH "$ORIGIN/libs"
-    INSTALL_RPATH "$ORIGIN/libs"
+    BUILD_RPATH "${GAME_RPATH_LIBS}"
+    INSTALL_RPATH "${GAME_RPATH_LIBS}"
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -65,7 +73,10 @@ else()
     compile_resources(
         "${CMAKE_CURRENT_SOURCE_DIR}/resources"
         "${CMAKE_BINARY_DIR}/bin/resources"
+        game_resources
     )
+    # The packaged game needs the compiled resources: build them before anything is installed.
+    add_dependencies(noi_engine_game game_resources)
 endif()
 
 add_copy_directory_dependency(noi_engine_game "libs" "${CMAKE_CURRENT_SOURCE_DIR}/.noi_engine/libs" "${CMAKE_BINARY_DIR}/bin")
@@ -73,3 +84,5 @@ add_copy_directory_dependency(noi_engine_game "libs" "${CMAKE_CURRENT_SOURCE_DIR
 if(DEFINED GAME_GENERATED_DIR)
     target_include_directories(noi_engine_game PRIVATE ${GAME_GENERATED_DIR})
 endif()
+
+include(cmake/package.cmake)

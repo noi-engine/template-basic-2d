@@ -17,7 +17,7 @@ string(JSON GAME_WINDOW_WIDTH GET "${PROJECT_JSON_CONTENT}" window width)
 string(JSON GAME_WINDOW_HEIGHT GET "${PROJECT_JSON_CONTENT}" window height)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(GAME_ASSET_PROVIDER_CLASS "compiled") # TODO
+    set(GAME_ASSET_PROVIDER_CLASS "compiled") # resources compiled by .resources_compiler
 else()
     set(GAME_ASSET_PROVIDER_CLASS "source")
 endif()

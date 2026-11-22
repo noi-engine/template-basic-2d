@@ -5,6 +5,7 @@
   "engine_version": "{{ENGINE_VERSION}}",
   "start_scene": "scenes/main.scene",
   "scripts_library": "build/debug/bin/libs/libgame_scripts.so",
+  "resources_compiler_version": "{{RESOURCES_COMPILER_VERSION}}",
   "editor_bridge_version": "{{EDITOR_BRIDGE_VERSION}}",
   "window": {
     "width": 1600,

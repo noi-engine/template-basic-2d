@@ -1,4 +1,7 @@
+#include <cstdlib>
+#include <exception>
 #include <filesystem>
+#include <iostream>
 #include <functional>
 #include <memory>
 #include <noi_engine/builtin/systems/physics_system.hpp>
@@ -12,6 +15,7 @@
 using namespace noi_engine_game;
 
 auto main(const int argc, char** argv) -> int
+try
 {
 	noi_engine::sdl_game game(
 		std::string(game_config::name), game_config::window_width,
@@ -24,4 +28,9 @@ auto main(const int argc, char** argv) -> int
 	game.set_scene(std::move(main_scene));
 
 	return game.run(argc, argv);
+}
+catch (const std::exception& error)
+{
+	std::cerr << "Fatal error: " << error.what() << std::endl;
+	return EXIT_FAILURE;
 }

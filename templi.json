@@ -1,17 +1,16 @@
 {
   "copy_excludes": [
     ".git",
-    ".github",
     ".noi_engine",
     ".vscode",
     ".idea",
     "build",
     "templi.json",
-    "noi_engine.template.json"
+    "noi_engine.template.json",
+    ".github/readme"
   ],
   "parse_excludes": [
     ".git",
-    ".github",
     ".noi_engine",
     ".vscode",
     ".idea",
@@ -27,7 +26,11 @@
     "CMakePresets.json",
     "cmake/project_config.cmake",
     "cmake/copy_directory.cmake",
-    ".gitignore"
+    ".gitignore",
+    ".github/readme",
+    ".github/workflows/release.yml",
+    "cmake/package.cmake",
+    "sources/config/config.cpp"
   ],
   "placeholders": [
     {
@@ -51,6 +54,12 @@
     {
       "label": "ENGINE_VERSION",
       "name": "ENGINE_VERSION",
+      "type": "TEXT",
+      "validators": []
+    },
+    {
+      "label": "RESOURCES_COMPILER_VERSION",
+      "name": "RESOURCES_COMPILER_VERSION",
       "type": "TEXT",
       "validators": []
     },
